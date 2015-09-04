@@ -15,7 +15,7 @@ int LoggingInit() {
   string lvlstr;
   if (lvlc == NULL) {
     printf("You can set logging level with TRAJOPT_LOG_THRESH. Valid values: %s. Defaulting to INFO\n", VALID_THRESH_VALUES);
-    lvlstr = "INFO";
+    lvlstr = "ERROR";
   }
   else lvlstr = string(lvlc);
   if (lvlstr == "FATAL") gLogLevel = LevelFatal;

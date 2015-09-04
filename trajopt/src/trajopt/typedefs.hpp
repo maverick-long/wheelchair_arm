@@ -1,3 +1,6 @@
+#ifndef TYPEDEFS_HPP
+#define TYPEDEFS_HPP
+
 #pragma once
 #include <vector>
 #include <map>
@@ -49,3 +52,5 @@ public:
 typedef boost::shared_ptr<Plotter> PlotterPtr;
 
 }
+
+#endif // TYPEDEFS_HPP

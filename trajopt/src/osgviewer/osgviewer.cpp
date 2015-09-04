@@ -188,7 +188,7 @@ KinBodyGroup* osgNodeFromKinBody(const KinBody& body) {
   KinBodyGroup* group = new KinBodyGroup;
   const vector<KinBody::LinkPtr>& links = body.GetLinks();
   for (int i=0; i < links.size(); ++i) {
-    if (links[i]->GetGeometries().size() > 0) {
+    if (links[i]->GetGeometries().size() > 0 && links[i]->IsEnabled()==true) {
       MatrixTransform* link_node = osgNodeFromLink(*links[i]);
       group->addChild(link_node);
       group->links.push_back(links[i]);
@@ -371,6 +371,10 @@ public:
   ~OsgGraphHandle() {
     parent->removeChild(node);
   }
+  void SetTransform(const RaveTransform<float>& t){
+	  //Still needs to be implemented
+	  return;
+  }
 };
 
 KinBodyGroup* GetOsgGroup(KinBody& body) {
@@ -457,7 +461,8 @@ OSGViewer::OSGViewer(EnvironmentBasePtr env) : ViewerBase(env), m_idling(false) 
   m_viewer.realize();
   m_cam = m_viewer.getCamera();
   m_handler = new EventHandler;
-  m_viewer.setCameraManipulator(m_handler.get());
+  // m_handler->setHomePosition(Vec3f(3,3,2), Vec3f(0,0,1), Vec3f(0,0,1));
+  m_viewer.setCameraManipulator(m_handler.get(),true);
   AddLights(m_root);
   m_cam->setClearColor(osg::Vec4(1,1,1,1));
 
@@ -809,6 +814,11 @@ OpenRAVE::GraphHandlePtr  OSGViewer::_drawlines(osg::PrimitiveSet::Mode mode, co
 OpenRAVE::GraphHandlePtr  OSGViewer::drawlinestrip(const float *ppoints,  int numPoints, int stride, float fwidth, const RaveVectorf &color) {
   return _drawlines(osg::PrimitiveSet::LINE_STRIP, ppoints, numPoints, stride, fwidth, color);
 }
+OpenRAVE::GraphHandlePtr  OSGViewer::drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors) {
+	//Place holder function, correct behavior still needs to be implemented
+  return _drawlines(osg::PrimitiveSet::LINE_STRIP, ppoints, numPoints, stride, fwidth, RaveVectorf(1,0,0,1));
+}
+
 OpenRAVE::GraphHandlePtr  OSGViewer::drawlinelist(const float *ppoints,  int numPoints, int stride, float fwidth, const RaveVectorf &color) {
   return _drawlines(osg::PrimitiveSet::LINES, ppoints, numPoints, stride, fwidth, color);
 }

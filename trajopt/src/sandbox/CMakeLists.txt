@@ -1,7 +1,7 @@
 
-add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/data")
+add_definitions(-DDATA_DIR="${TRAJOPT_SOURCE_DIR}/data")
 
-set(RBDL_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/ext/rbdl/src" "${CMAKE_BINARY_DIR}/ext/rbdl/src")
+set(RBDL_INCLUDE_DIRS "${TRAJOPT_SOURCE_DIR}/ext/rbdl/src" "${CMAKE_BINARY_DIR}/ext/rbdl/src")
 
 include_directories(
   SYSTEM
@@ -32,3 +32,9 @@ target_link_libraries(dubins_car trajopt)
 
 add_executable(needle_steering needle_steering.cpp o3.cpp)
 target_link_libraries(needle_steering trajopt)
+
+install(TARGETS pushing compl_test dubins_car needle_steering
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

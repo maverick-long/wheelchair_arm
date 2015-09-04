@@ -1,3 +1,6 @@
+#ifndef RAVE_UTILS_HPP
+#define RAVE_UTILS_HPP
+
 #pragma once
 #include <openrave/openrave.h>
 #include "macros.h"
@@ -19,3 +22,4 @@ void PlotAxes(OR::EnvironmentBase& env, const OR::Transform& T, float size, std:
 
 }
 
+#endif // RAVE_UTILS_HPP

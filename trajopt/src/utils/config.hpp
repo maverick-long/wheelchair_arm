@@ -1,3 +1,6 @@
+#ifndef TRAJOPT_CONFIG_HPP
+#define TRAJOPT_CONFIG_HPP
+
 #pragma once
 
 #include <vector>
@@ -60,3 +63,5 @@ struct CommandParser {
 };
 
 }
+
+#endif // TRAJOPT_CONFIG_HPP

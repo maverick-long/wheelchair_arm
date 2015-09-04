@@ -100,7 +100,7 @@ struct PyCloud {
 
 CloudXYZ::Ptr PolygonMesh_getCloud(const PolygonMesh* mesh) {
   CloudXYZ::Ptr cloud(new CloudXYZ());
-  pcl::fromROSMsg(mesh->cloud, *cloud);
+  pcl::fromPCLPointCloud2(mesh->cloud, *cloud);
   return cloud;
 }
 py::object PolygonMesh_getVertices(const PolygonMesh* mesh) {

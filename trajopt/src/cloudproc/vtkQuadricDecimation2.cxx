@@ -1096,6 +1096,8 @@ int vtkQuadricDecimation2::CollapseEdge(vtkIdType pt0Id, vtkIdType pt1Id)
     {
     cellId = this->CollapseCellIds->GetId(i);
     this->Mesh->GetCellPoints(cellId, npts, pts);
+    if(NULL !=pts) 
+    {
     for (j = 0; j < 3; j++) 
       {
       if (pts[j] == pt1Id) 
@@ -1105,6 +1107,9 @@ int vtkQuadricDecimation2::CollapseEdge(vtkIdType pt0Id, vtkIdType pt1Id)
         numDeleted++;
         }
       }
+    }else{
+      std::cerr << "VTK QuadraticDecimation error on pointer pts" << std::endl;
+    }
     }
 
   this->Mesh->GetPointCells(pt1Id, this->CollapseCellIds);

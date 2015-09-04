@@ -1,3 +1,6 @@
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
 #pragma once
 #include "typedefs.hpp"
 #include <openrave/openrave.h>
@@ -58,3 +61,4 @@ void TRAJOPT_API AddVarArray(OptProb& prob, int rows, int cols, const string& na
 
 }
 
+#endif // UTILS_HPP

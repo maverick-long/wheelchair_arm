@@ -1,3 +1,6 @@
+#ifndef TRAJOPT_MATH_HPP
+#define TRAJOPT_MATH_HPP
+
 #pragma once
 #include <cmath>
 
@@ -10,3 +13,4 @@ float randf() {
 
 }
 
+#endif // TRAJOPT_MATH_HPP

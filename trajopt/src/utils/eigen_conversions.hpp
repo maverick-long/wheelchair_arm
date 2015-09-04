@@ -1,3 +1,6 @@
+#ifndef EIGEN_CONVERSIONS_HPP
+#define EIGEN_CONVERSIONS_HPP
+
 #pragma once
 
 #include <Eigen/Core>
@@ -14,3 +17,4 @@ inline Eigen::VectorXd toVectorXd(const std::vector<double>& x) {
 
 }
 
+#endif // EIGEN_CONVERSIONS_HPP

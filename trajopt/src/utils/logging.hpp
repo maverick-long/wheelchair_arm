@@ -1,3 +1,6 @@
+#ifndef TRAJOPT_LOGGING_HPP
+#define TRAJOPT_LOGGING_HPP
+
 #pragma once
 #include <cstdio>
 
@@ -32,3 +35,5 @@ inline LogLevel GetLogLevel() {return gLogLevel;}
 #define LOG_TRACE(msg, ...) if (util::GetLogLevel() >= util::LevelTrace) {printf(TRACE_PREFIX); printf(msg, ##__VA_ARGS__); printf(LOG_SUFFIX);}
 
 }
+
+#endif // TRAJOPT_LOGGING_HPP

@@ -17,6 +17,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -Wno-deprecated")
 set(CMAKE_CXX_FLAGS "-std=c++0x -g -march=native -mno-avx ${CMAKE_CXX_FLAGS}")
 
 
+
 # add_custom_command(
 #   COMMAND "./gen_instantiations.py" 
 #   OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/autogen_instantiations.cpp"
@@ -43,3 +44,9 @@ target_link_libraries(cloudprocpy cloudproc ${Boost_SYSTEM_LIBRARY} )
 
 #add_executable(simplify_test simplify_test.cpp)
 #target_link_libraries(simplify_test ${PCL_LIBRARIES} cloudproc ${PCL_LIBRARIES})
+
+#install(TARGETS cloudprocpy cloudproc
+#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)

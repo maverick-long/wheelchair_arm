@@ -1,5 +1,5 @@
 
-set(RBDL_INCLUDE_DIRS "${CMAKE_SOURCE_DIR}/ext/rbdl/src" "${CMAKE_BINARY_DIR}/ext/rbdl/src")
+set(RBDL_INCLUDE_DIRS "${TRAJOPT_SOURCE_DIR}/ext/rbdl/src" "${CMAKE_BINARY_DIR}/ext/rbdl/src")
 
 
 include_directories(
@@ -26,8 +26,8 @@ add_library(humanoids humanoids.cpp
 	)
 target_link_libraries(humanoids sco trajopt ${OpenRAVE_BOTH_LIBRARIES})
 
-add_definitions(-DDATA_DIR="${CMAKE_SOURCE_DIR}/data")
-add_definitions(-DBIGDATA_DIR="${CMAKE_SOURCE_DIR}/bigdata")
+add_definitions(-DDATA_DIR="${TRAJOPT_SOURCE_DIR}/data")
+add_definitions(-DBIGDATA_DIR="${TRAJOPT_SOURCE_DIR}/bigdata")
 
 include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
 boost_python_module(humanoidspy humanoidspy.cpp)
@@ -37,3 +37,9 @@ target_link_libraries(humanoidspy trajopt humanoids ${Boost_SYSTEM_LIBRARY} )
 include_directories(${GTEST_INCLUDE_DIRS})
 #add_executable(rbdl-unit rbdl-unit.cpp)
 #target_link_libraries(rbdl-unit trajopt humanoids gtest gtest_main)
+
+install(TARGETS humanoids 
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)

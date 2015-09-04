@@ -1,3 +1,7 @@
+#ifndef COLLISION_TERMS_HPP
+#define COLLISION_TERMS_HPP
+
+
 #pragma once
 #include "trajopt/common.hpp"
 #include "trajopt/collision_checker.hpp"
@@ -102,3 +106,5 @@ private:
 };
 
 }
+
+#endif // COLLISION_TERMS_HPP

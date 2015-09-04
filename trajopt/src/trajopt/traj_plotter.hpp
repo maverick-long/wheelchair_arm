@@ -1,3 +1,6 @@
+#ifndef TRAJ_PLOTTER_HPP
+#define TRAJ_PLOTTER_HPP
+
 #pragma once
 #include "trajopt/common.hpp"
 namespace trajopt {
@@ -23,3 +26,5 @@ struct TRAJOPT_API TrajPlotter {
 typedef boost::shared_ptr<TrajPlotter> TrajPlotterPtr;
 
 }
+
+#endif // TRAJ_PLOTTER_HPP

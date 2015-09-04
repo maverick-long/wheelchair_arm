@@ -1,3 +1,6 @@
+#ifndef STL_TO_STRING_HPP
+#define STL_TO_STRING_HPP
+
 #pragma once
 #include <string>
 #include <iostream>
@@ -70,3 +73,4 @@ std::string Str(const typename std::map<K,V>& x) {
 
 }
 
+#endif // STL_TO_STRING_HPP

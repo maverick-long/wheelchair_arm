@@ -1,3 +1,7 @@
+#ifndef VECTOR_OPS_HPP
+#define VECTOR_OPS_HPP
+
+#pragma once
 #include <vector>
 
 namespace util {
@@ -10,3 +14,5 @@ std::vector<int> arange(int n) {
 
 
 }
+
+#endif // VECTOR_OPS_HPP

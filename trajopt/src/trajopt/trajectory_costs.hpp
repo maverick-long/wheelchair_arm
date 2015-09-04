@@ -1,3 +1,6 @@
+#ifndef TRAJECTORY_COSTS_HPP
+#define TRAJECTORY_COSTS_HPP
+
 #pragma once
 
 /**
@@ -45,3 +48,4 @@ private:
 
 }
 
+#endif // TRAJECTORY_COSTS_HPP

@@ -1,3 +1,6 @@
+#ifndef BASIC_ARRAY_HPP
+#define BASIC_ARRAY_HPP
+
 #pragma once
 #include <vector>
 
@@ -115,3 +118,5 @@ struct BasicArray {
 };
 
 }
+
+#endif // BASIC_ARRAY_HPP

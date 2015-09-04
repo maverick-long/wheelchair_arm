@@ -1,3 +1,6 @@
+#ifndef JSON_MARSHAL_HPP
+#define JSON_MARSHAL_HPP
+
 #pragma once
 #include <json/json.h>
 #include <vector>
@@ -66,3 +69,5 @@ void childFromJson(const Json::Value& parent, T& ref, const char* name) {
 
 
 }
+
+#endif // JSON_MARSHAL_HPP

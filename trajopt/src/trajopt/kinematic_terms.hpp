@@ -1,3 +1,6 @@
+#ifndef KINEMATICS_TERMS_HPP
+#define KINEMATICS_TERMS_HPP
+
 #pragma once
 
 #include "sco/modeling.hpp"
@@ -32,10 +35,12 @@ struct CartPoseErrCalculator : public VectorOfVector {
   OR::Transform pose_inv_;
   ConfigurationPtr manip_;
   OR::KinBody::LinkPtr link_;
-  CartPoseErrCalculator(const OR::Transform& pose, ConfigurationPtr manip, OR::KinBody::LinkPtr link) :
+  Vector3d offset_;
+  CartPoseErrCalculator(const OR::Transform& pose, ConfigurationPtr manip, OR::KinBody::LinkPtr link,Eigen::Vector3d offset) :
     pose_inv_(pose.inverse()),
     manip_(manip),
-    link_(link) {}
+    link_(link),
+    offset_(offset){}
   VectorXd operator()(const VectorXd& dof_vals) const;
 };
 
@@ -44,6 +49,22 @@ struct CartPoseErrorPlotter : public Plotter {
   VarVector m_vars;
   CartPoseErrorPlotter(boost::shared_ptr<void> calc, const VarVector& vars) : m_calc(calc), m_vars(vars) {}
   void Plot(const DblVec& x, OR::EnvironmentBase& env, std::vector<OR::GraphHandlePtr>& handles);
+};
+
+struct CartPoseConstraintCalculator : public VectorOfVector {
+	OR::Vector plane1_;
+	OR::Vector plane2_;
+	OR::Vector normal_;
+	ConfigurationPtr manip_;
+	OR::KinBody::LinkPtr link_;
+	CartPoseConstraintCalculator(const OR::Vector plane1, const OR::Vector plane2, ConfigurationPtr manip, OR::KinBody::LinkPtr link) :
+	plane1_(plane1),
+	plane2_(plane2),
+    manip_(manip),
+	link_(link)
+	{normal_ = (plane1 - plane2).normalize();}
+	VectorXd operator()(const VectorXd& dof_vals) const;
+
 };
 
 
@@ -87,3 +108,5 @@ public:
 
 
 }
+
+#endif // KINEMATIC_TERMS_HPP

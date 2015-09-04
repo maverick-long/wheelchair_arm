@@ -1,3 +1,7 @@
+#ifndef PROBLEM_DESCRIPTION_HPP
+#define PROBLEM_DESCRIPTION_HPP
+
+
 #include "trajopt/common.hpp"
 #include "json_marshal.hpp"
 #include <boost/function.hpp>
@@ -165,12 +169,24 @@ struct PoseCostInfo : public TermInfo, public MakesCost, public MakesConstraint 
   int timestep;
   Vector3d xyz;
   Vector4d wxyz;
+  Vector3d offset;
   Vector3d pos_coeffs, rot_coeffs;
   // double coeff;
   KinBody::LinkPtr link;
   void fromJson(const Value& v);
   void hatch(TrajOptProb& prob);
   DEFINE_CREATE(PoseCostInfo);
+};
+
+struct PositionConstraintInfo : public TermInfo, public MakesConstraint {
+	  int timestep;
+	  Vector3d plane1;
+	  Vector3d plane2;
+	  double dist_coeff;
+	  KinBody::LinkPtr link;
+	  void fromJson(const Value& v);
+	  void hatch(TrajOptProb& prob);
+	  DEFINE_CREATE(PositionConstraintInfo);
 };
 
 
@@ -263,6 +279,7 @@ joint-space position constraint
 struct JointConstraintInfo : public TermInfo, public MakesConstraint {
   /// joint values. list of length 1 automatically gets expanded to list of length n_dof
   DblVec vals;
+  DblVec coeffs;
   /// which timestep. default = n_timesteps - 1
   int timestep;
   void fromJson(const Value& v);
@@ -273,3 +290,5 @@ struct JointConstraintInfo : public TermInfo, public MakesConstraint {
 
 
 }
+
+#endif // PROBLEM_DESCRIPTION_HPP

@@ -1,3 +1,6 @@
+#ifndef PLOT_CALLBACK_HPP
+#define PLOT_CALLBACK_HPP
+
 #pragma once
 #include "sco/optimizers.hpp"
 #include "trajopt/common.hpp"
@@ -11,3 +14,5 @@ This callback will plot the trajectory (with translucent copies of the robot) as
 Optimizer::Callback TRAJOPT_API PlotCallback(TrajOptProb& prob);
 
 }
+
+#endif // PLOT_CALLBACK_HPP

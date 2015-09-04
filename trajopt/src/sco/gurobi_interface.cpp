@@ -77,6 +77,7 @@ GurobiModel::GurobiModel() {
     GRBloadenv(&gEnv, NULL);
     if (util::GetLogLevel() < util::LevelDebug) {
       ENSURE_SUCCESS(GRBsetintparam(gEnv, "OutputFlag",0));
+      //ENSURE_SUCCESS(GRBsetintparam(gEnv, "Threads",1)); //More threads actually slow it down
     }
   }
   GRBnewmodel(gEnv, &m_model,"problem",0, NULL, NULL, NULL,NULL, NULL);

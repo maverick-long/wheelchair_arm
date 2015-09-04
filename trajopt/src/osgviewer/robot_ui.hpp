@@ -1,3 +1,8 @@
+#ifndef ROBOT_UI_HPP
+#define ROBOT_UI_HPP
+
+/*** INCLUDE FILES ***/
+
 #pragma once
 #include "osgviewer.hpp"
 
@@ -28,3 +33,5 @@ private:
   RobotPtr m_robot;
 
 };
+
+#endif // ROBOT_UI_HPP

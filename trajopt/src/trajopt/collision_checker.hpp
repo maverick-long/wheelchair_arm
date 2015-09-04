@@ -1,3 +1,7 @@
+#ifndef COLLISION_CHECKER_HPP
+#define COLLISION_CHECKER_HPP
+
+
 #pragma once
 #include "typedefs.hpp"
 #include <set>
@@ -42,12 +46,14 @@ public:
 
   /** check everything vs everything else */
   virtual void AllVsAll(vector<Collision>& collisions)=0;
+
+  virtual void RobotVsRobot(const vector<KinBody::LinkPtr>& links, vector<Collision>& collisions, short filterMask)=0;
   /** check link vs everything else */
   virtual void LinkVsAll(const KinBody::Link& link, vector<Collision>& collisions, short filterMask)=0;
   virtual void LinksVsAll(const vector<KinBody::LinkPtr>& links, vector<Collision>& collisions, short filterMask)=0;
 
   /** check robot vs everything else. includes attached bodies */
-  void BodyVsAll(const KinBody& body, vector<Collision>& collisions, short filterMask=-1) {
+  void BodyVsAll(const KinBody& body, vector<Collision>& collisions, short filterMask=-1) { 
     LinksVsAll(body.GetLinks(), collisions, filterMask);
   }
   /** contacts of distance < (arg) will be returned */
@@ -87,3 +93,4 @@ TRAJOPT_API void PlotCollisions(const std::vector<Collision>& collisions, OR::En
 
 }
 
+#endif // COLLISION_CHECKER_HPP

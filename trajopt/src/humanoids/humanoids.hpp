@@ -22,7 +22,7 @@ struct ZMPConstraint : public IneqConstraint, public Plotter {
 struct StaticTorqueCost : public CostFromErrFunc {
   RobotAndDOFPtr m_rad;
   VarVector m_vars;
-  StaticTorqueCost(RobotAndDOFPtr rad, const VarVector& vars, double coeff);
+  StaticTorqueCost(RobotAndDOFPtr rad, const VarVector& vars, const VectorXd& coeffs);
 };
 
 struct PECost : public CostFromErrFunc {
@@ -34,5 +34,7 @@ struct PECost : public CostFromErrFunc {
 struct FootHeightConstraint : public ConstraintFromFunc {
   FootHeightConstraint(RobotAndDOFPtr rad, OpenRAVE::KinBody::LinkPtr link, double height, const VarVector& vars);
 };
+
+void RegisterHumanoidCostsAndCnts();
 
 }

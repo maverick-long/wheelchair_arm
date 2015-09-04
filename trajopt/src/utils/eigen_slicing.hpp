@@ -1,3 +1,8 @@
+#ifndef EIGEN_SLICING_HPP
+#define EIGEN_SLICING_HPP
+
+#pragma once
+
 #include <Eigen/Core>
 #include <vector>
 
@@ -19,3 +24,5 @@ std::vector<int> flatnonzero(const VectorT& x) {
 
 
 }
+
+#endif // EIGEN_SLICING_HPP

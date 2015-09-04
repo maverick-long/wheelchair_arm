@@ -1,3 +1,6 @@
+#ifndef CONFIGURATION_SPACE_HPP
+#define CONFIGURATION_SPACE_HPP
+
 #pragma once
 #include "typedefs.hpp"
 #include <openrave/openrave.h>
@@ -83,3 +86,5 @@ private:
 typedef boost::shared_ptr<RobotAndDOF> RobotAndDOFPtr;
 
 }
+
+#endif // CONFIGURATION_SPACE_HPP

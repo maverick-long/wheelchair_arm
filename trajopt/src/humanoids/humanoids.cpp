@@ -30,6 +30,13 @@ const double footpolydata[8] = {
     -0.08246, 0.061646};
 MatrixX2d local_aabb_poly = Map<const MatrixX2d>(footpolydata,4,2);
 
+const double zmppolydata[8] = {
+    0.025, 0.025,
+    0.025, -0.025,
+    -0.025, -0.025,
+    -0.025, 0.025};
+MatrixX2d local_zmp_poly = Map<const MatrixX2d>(zmppolydata,4,2);
+
 /**
 px,py,pz=aabb.pos()
 ex,ey,ez=aabb.extents()
@@ -140,8 +147,8 @@ struct StaticTorqueCostCalc : public VectorOfVector {
   }
 };
 
-StaticTorqueCost::StaticTorqueCost(RobotAndDOFPtr rad, const VarVector& vars, double coeff) :
-  CostFromErrFunc(VectorOfVectorPtr(new StaticTorqueCostCalc(rad)), vars, VectorXd::Ones(vars.size())*coeff,
+StaticTorqueCost::StaticTorqueCost(RobotAndDOFPtr rad, const VarVector& vars, const VectorXd& coeffs) :
+  CostFromErrFunc(VectorOfVectorPtr(new StaticTorqueCostCalc(rad)), vars, coeffs,
     SQUARED,  "static_torque") {
 }
 
@@ -215,18 +222,18 @@ struct PECostInfo : public TermInfo, public MakesCost {
   DEFINE_CREATE(PECostInfo)
 };
 struct StaticTorqueCostInfo : public TermInfo, public MakesCost {
-  double coeff;
+  DblVec coeffs;
   int timestep;
   void fromJson(const Value& v) {
     FAIL_IF_FALSE(v.isMember("params"));
     const Value& params = v["params"];
     childFromJson(params, timestep, "timestep");
-    childFromJson(params, coeff, "coeff");
+    childFromJson(params, coeffs, "coeffs");
     int n_steps = gPCI->basic_info.n_steps;
     FAIL_IF_FALSE((timestep >= 0) && (timestep < n_steps));
   }
   void hatch(TrajOptProb& prob) {
-    prob.addCost(CostPtr(new StaticTorqueCost(boost::dynamic_pointer_cast<RobotAndDOF>(prob.GetRAD()), prob.GetVarRow(timestep), coeff)));
+    prob.addCost(CostPtr(new StaticTorqueCost(boost::dynamic_pointer_cast<RobotAndDOF>(prob.GetRAD()), prob.GetVarRow(timestep), toVectorXd(coeffs))));
     prob.getCosts().back()->setName(name);    
   }
   DEFINE_CREATE(StaticTorqueCostInfo)
@@ -252,6 +259,23 @@ MatrixX2d GetFeetPoly(const vector<KinBody::LinkPtr>& links) {
   for (int i=1; i < links.size(); ++i) {
     allpoly = concat0(allpoly, GetFootPoly(*links[i]));
   }
+  return hull2d(allpoly);
+}
+
+OpenRAVE::Vector GetZMPVector(const KinBody::Link& link){
+  OpenRAVE::Vector v = link.GetTransform().trans;
+  return v;
+}
+
+MatrixX2d GetFeetPoly_Munip(const vector<KinBody::LinkPtr>& links) {
+  FAIL_IF_FALSE(links.size() > 0);
+  OpenRAVE::Vector v1 = GetZMPVector(*links[0]);
+  OpenRAVE::Vector v2 = GetZMPVector(*links[1]);
+  OpenRAVE::Vector vcenter;
+  vcenter.x = (v1.x + v2.x)/2+0.035;
+  vcenter.y = (v1.y + v2.y)/2;
+  vcenter.z = 0;
+  MatrixX2d allpoly = local_zmp_poly.rowwise() + Vector2d(vcenter.x, vcenter.y).transpose();
   return hull2d(allpoly);
 }
 
@@ -283,6 +307,33 @@ struct ZMPConstraintInfo : public TermInfo, public MakesConstraint{
   DEFINE_CREATE(ZMPConstraintInfo)
 };
 
+struct ZMPConstraintMunipInfo : public TermInfo, public MakesConstraint{
+  int timestep;
+  vector<string> planted_link_names;
+  void fromJson(const Value& v) {
+    FAIL_IF_FALSE(v.isMember("params"));
+    const Value& params = v["params"];
+    childFromJson(params, timestep, "timestep");
+    int n_steps = gPCI->basic_info.n_steps;
+    FAIL_IF_FALSE((timestep >= 0) && (timestep < n_steps));
+    childFromJson(params, planted_link_names, "planted_links");
+  }
+  void hatch(TrajOptProb& prob) {
+    vector<KinBody::LinkPtr> planted_links;
+    RobotAndDOFPtr rad = boost::dynamic_pointer_cast<RobotAndDOF>(prob.GetRAD());
+    BOOST_FOREACH(const string& linkname, planted_link_names) {
+      KinBody::LinkPtr link = rad->GetRobot()->GetLink(linkname);
+      if (!link) {
+        PRINT_AND_THROW(boost::format("invalid link name: %s")%linkname);
+      }
+      planted_links.push_back(link);
+    }
+    prob.addConstraint(ConstraintPtr(new ZMPConstraint(rad, GetFeetPoly_Munip(planted_links), prob.GetVarRow(timestep))));
+    prob.getIneqConstraints().back()->setName(name);    
+  }
+  DEFINE_CREATE(ZMPConstraintMunipInfo)
+};
+
 struct FootHeightCntInfo : public TermInfo, public MakesConstraint {
   int timestep;
   double height;
@@ -308,14 +359,12 @@ struct FootHeightCntInfo : public TermInfo, public MakesConstraint {
   DEFINE_CREATE(FootHeightCntInfo)
 };
 
-
-
 TRAJOPT_API void RegisterHumanoidCostsAndCnts() {
   TermInfo::RegisterMaker("potential_energy", &PECostInfo::create);
   TermInfo::RegisterMaker("static_torque", &StaticTorqueCostInfo::create);
   TermInfo::RegisterMaker("zmp", &ZMPConstraintInfo::create);
+  TermInfo::RegisterMaker("zmp_munip", &ZMPConstraintMunipInfo::create);
   TermInfo::RegisterMaker("foot_height", &FootHeightCntInfo::create);
 }
-
 
 }

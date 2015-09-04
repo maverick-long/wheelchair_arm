@@ -14,6 +14,9 @@
 #include "utils/eigen_slicing.hpp"
 #include <boost/algorithm/string.hpp>
 #include "sco/optimizers.hpp"
+
+#include "sandbox/dynamics_utils.hpp"
+
 using namespace Json;
 using namespace std;
 using namespace OpenRAVE;
@@ -46,6 +49,7 @@ void ensure_only_members(const Value& v, const char** fields, int nvalid) {
 void RegisterMakers() {
 
   TermInfo::RegisterMaker("pose", &PoseCostInfo::create);
+  TermInfo::RegisterMaker("pose_limit", &PositionConstraintInfo::create);
   TermInfo::RegisterMaker("joint_pos", &JointPosCostInfo::create);
   TermInfo::RegisterMaker("joint_vel", &JointVelCostInfo::create);
   TermInfo::RegisterMaker("collision", &CollisionCostInfo::create);
@@ -348,6 +352,7 @@ void PoseCostInfo::fromJson(const Value& v) {
   childFromJson(params, timestep, "timestep", gPCI->basic_info.n_steps-1);
   childFromJson(params, xyz,"xyz");
   childFromJson(params, wxyz,"wxyz");
+  childFromJson(params, offset,"offset",(Vector3d)Vector3d::Zero());
   childFromJson(params, pos_coeffs,"pos_coeffs", (Vector3d)Vector3d::Ones());
   childFromJson(params, rot_coeffs,"rot_coeffs", (Vector3d)Vector3d::Ones());
 
@@ -358,13 +363,13 @@ void PoseCostInfo::fromJson(const Value& v) {
     PRINT_AND_THROW(boost::format("invalid link name: %s")%linkstr);
   }
 
-  const char* all_fields[] = {"timestep", "xyz", "wxyz", "pos_coeffs", "rot_coeffs","link"};
+  const char* all_fields[] = {"timestep", "xyz", "wxyz", "offset", "pos_coeffs", "rot_coeffs","link"};
   ensure_only_members(params, all_fields, sizeof(all_fields)/sizeof(char*));
 
 }
 
 void PoseCostInfo::hatch(TrajOptProb& prob) {
-  VectorOfVectorPtr f(new CartPoseErrCalculator(toRaveTransform(wxyz, xyz), prob.GetRAD(), link));
+  VectorOfVectorPtr f(new CartPoseErrCalculator(toRaveTransform(wxyz, xyz), prob.GetRAD(), link, offset));
   if (term_type == TT_COST) {
     prob.addCost(CostPtr(new CostFromErrFunc(f, prob.GetVarRow(timestep), concat(rot_coeffs, pos_coeffs), ABS, name)));
   }
@@ -375,6 +380,31 @@ void PoseCostInfo::hatch(TrajOptProb& prob) {
   prob.GetPlotter()->Add(PlotterPtr(new CartPoseErrorPlotter(f, prob.GetVarRow(timestep))));
   prob.GetPlotter()->AddLink(link);
 
+}
+
+void PositionConstraintInfo::fromJson(const Value& v){
+	FAIL_IF_FALSE(v.isMember("params"));
+	const Value& params = v["params"];
+	childFromJson(params, timestep, "timestep", gPCI->basic_info.n_steps-1);
+	childFromJson(params, plane1, "plane1");
+	childFromJson(params, plane2, "plane2");
+	childFromJson(params, dist_coeff,"dist_coeff", 1.0);
+	string linkstr;
+	childFromJson(params, linkstr, "link");
+	link = GetLinkMaybeAttached(gPCI->rad->GetRobot(), linkstr);
+	if (!link) {
+	PRINT_AND_THROW(boost::format("invalid link name in PositionConstraint: %s")%linkstr);
+	}
+
+	const char* all_fields[] = {"timestep", "plane1", "plane2", "link", "dist_coeff"};
+	ensure_only_members(params, all_fields, sizeof(all_fields)/sizeof(char*));
+}
+
+void PositionConstraintInfo::hatch(TrajOptProb& prob){
+	VectorOfVectorPtr f(new CartPoseConstraintCalculator(toRaveVector(plane1), toRaveVector(plane2), prob.GetRAD(), link));
+	Matrix<double, 1,1> coeffs;
+	coeffs[0] = dist_coeff;
+	prob.addConstraint(ConstraintPtr(new ConstraintFromFunc(f, prob.GetVarRow(timestep), coeffs, INEQ, name)));
 }
 
 
@@ -561,9 +591,11 @@ void JointConstraintInfo::fromJson(const Value& v) {
   if (vals.size() != n_dof) {
     PRINT_AND_THROW( boost::format("wrong number of dof vals. expected %i got %i")%n_dof%vals.size());
   }
+
+  childFromJson(params, coeffs, "coeffs");
   childFromJson(params, timestep, "timestep", gPCI->basic_info.n_steps-1);
   
-  const char* all_fields[] = {"vals", "timestep"};
+  const char* all_fields[] = {"vals", "coeffs","timestep"};
   ensure_only_members(params, all_fields, sizeof(all_fields)/sizeof(char*));  
   
 }
@@ -572,7 +604,7 @@ void JointConstraintInfo::hatch(TrajOptProb& prob) {
   VarVector vars = prob.GetVarRow(timestep);
   int n_dof = vars.size();
   for (int j=0; j < n_dof; ++j) {
-    prob.addLinearConstraint(exprSub(AffExpr(vars[j]), vals[j]), EQ);    
+    prob.addLinearConstraint(exprMult(exprSub(AffExpr(vars[j]), vals[j]),coeffs[j]), EQ);
   }
 }
 

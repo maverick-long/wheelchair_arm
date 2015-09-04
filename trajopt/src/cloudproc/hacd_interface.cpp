@@ -16,7 +16,7 @@ void polygonMeshFromPointsTriangles(pcl::PolygonMesh& mesh, const vector< Vec3<R
     cloud.points[i].y = points[i].Y();
     cloud.points[i].z = points[i].Z();
   }
-  pcl::toROSMsg(cloud, mesh.cloud);
+  pcl::toPCLPointCloud2(cloud, mesh.cloud);
   mesh.polygons.resize(triangles.size());
   for (int i=0; i < triangles.size(); ++i) {
     vector<uint32_t>& vertices = mesh.polygons[i].vertices;
@@ -28,7 +28,7 @@ void polygonMeshFromPointsTriangles(pcl::PolygonMesh& mesh, const vector< Vec3<R
 }
 void pointsTrianglesFromPolygonMesh(const pcl::PolygonMesh& mesh, vector< Vec3<Real> >& points, vector< Vec3<long> >& triangles) {
   PointCloud<PointXYZ> cloud;
-  pcl::fromROSMsg (mesh.cloud, cloud);
+  pcl::fromPCLPointCloud2 (mesh.cloud, cloud);
   points.resize(cloud.size());
   for (int i=0; i < cloud.size(); ++i) {
     points[i].X() = cloud.points[i].x;
@@ -47,7 +47,8 @@ void pointsTrianglesFromPolygonMesh(const pcl::PolygonMesh& mesh, vector< Vec3<R
 
 void CallBack(const char * msg, double progress, double concavity, size_t nVertices)
 {
-    std::cout << msg;
+    /* Muted the HACD messages: */
+    //std::cout << msg;
 }
 
 vector<pcl::PolygonMesh::Ptr> ConvexDecompHACD(const pcl::PolygonMesh& mesh, float concavity) {

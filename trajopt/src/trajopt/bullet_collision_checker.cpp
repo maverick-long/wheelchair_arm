@@ -354,6 +354,7 @@ public:
   virtual void LinkVsAll(const KinBody::Link& link, vector<Collision>& collisions, short filterMask);
   virtual void ContinuousCheckTrajectory(const TrajArray& traj, Configuration& rad, vector<Collision>&);
   virtual void CastVsAll(Configuration& rad, const vector<KinBody::LinkPtr>& links, const DblVec& startjoints, const DblVec& endjoints, vector<Collision>& collisions);
+  virtual void RobotVsRobot(const vector<KinBody::LinkPtr>& links, vector<Collision>& collisions, short filterMask);
   ////
   ///////
 
@@ -484,6 +485,23 @@ void BulletCollisionChecker::AllVsAll(vector<Collision>& collisions) {
     }
     // caching helps performance, but for optimization the cost should not be history-dependent
     contactManifold->clearManifold();
+  }
+}
+
+void BulletCollisionChecker::RobotVsRobot(const vector<KinBody::LinkPtr>& links, vector<Collision>& collisions, short filterMask){
+  UpdateBulletFromRave();
+  m_world->updateAabbs();
+  std::vector< OR::KinBodyPtr > bodies;
+  m_env->GetBodies(bodies);
+  bodies.erase(bodies.begin());
+  for(int i=0; i<bodies.size(); ++i){
+    RemoveKinBody(bodies[i]);
+  }
+  for (int i=0; i < links.size(); ++i) {
+    LinkVsAll_NoUpdate(*links[i], collisions, filterMask);
+  }
+  for(int i=0; i<bodies.size(); ++i){
+    AddKinBody(bodies[i]);
   }
 }
 

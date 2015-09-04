@@ -61,6 +61,7 @@ namespace trajopt {
 VectorXd CartPoseErrCalculator::operator()(const VectorXd& dof_vals) const {
   manip_->SetDOFValues(toDblVec(dof_vals));
   OR::Transform newpose = link_->GetTransform();
+  newpose.trans = link_->GetTransform()*OR::Vector(offset_[0],offset_[1],offset_[2],0);
 
   OR::Transform pose_err = pose_inv_ * newpose;
   VectorXd err = concat(rotVec(pose_err.rot), toVector3d(pose_err.trans));
@@ -85,6 +86,18 @@ void CartPoseErrorPlotter::Plot(const DblVec& x, OR::EnvironmentBase& env, std::
   PlotAxes(env, cur, .05,  handles);
   PlotAxes(env, target, .05,  handles);
   handles.push_back(env.drawarrow(cur.trans, target.trans, .005, OR::Vector(1,0,1,1)));
+}
+
+VectorXd CartPoseConstraintCalculator::operator()(const VectorXd& dof_vals) const {
+	manip_->SetDOFValues(toDblVec(dof_vals));
+	OR::Vector curPosition = link_->GetTransform().trans;
+
+	OR::Vector curError = curPosition - plane1_;
+
+	Matrix<double, 1, 1> cost;
+	cost[0] = curError.dot(normal_);
+
+	return cost;
 }
 
 

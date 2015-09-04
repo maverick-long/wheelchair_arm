@@ -1,3 +1,8 @@
+#ifndef OSGVIEWER_HPP
+#define OSGVIEWER_HPP
+
+/*** INCLUDE FILES ***/
+
 #pragma once
 #include <openrave/openrave.h>
 #include <osg/Geometry>
@@ -40,6 +45,7 @@ public:
   OpenRAVE::GraphHandlePtr plot3(const float* ppoints, int numPoints, int stride, float pointsize, const float* colors, int drawstyle=0, bool bhasalpha=false);
   OpenRAVE::GraphHandlePtr  drawlinelist(const float *ppoints, int numPoints, int stride, float fwidth, const RaveVectorf &color);
   OpenRAVE::GraphHandlePtr  drawlinestrip(const float *ppoints, int numPoints, int stride, float fwidth, const RaveVectorf &color);
+  OpenRAVE::GraphHandlePtr  drawlinestrip(const float* ppoints, int numPoints, int stride, float fwidth, const float* colors);
   OpenRAVE::GraphHandlePtr  _drawlines(osg::PrimitiveSet::Mode mode, const float *ppoints, int numPoints, int stride, float fwidth, const RaveVectorf &color);
   OpenRAVE::GraphHandlePtr drawtext(const std::string& text, float x, float y, float fontsize, const OpenRAVE::Vector& color);
 
@@ -80,3 +86,5 @@ typedef boost::shared_ptr<OSGViewer> OSGViewerPtr;
 
 void TRAJOPT_API SetColor(OpenRAVE::GraphHandlePtr handle, const osg::Vec4& color);
 void TRAJOPT_API SetTransparency(OpenRAVE::GraphHandlePtr handle, float alpha);
+
+#endif // OSGVIEWER_HPP

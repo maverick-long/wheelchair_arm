@@ -26,4 +26,3 @@ include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
 boost_python_module(sensorsimpy sensorsimpy.cpp)
 target_link_libraries(sensorsimpy osgviewer ${Boost_SYSTEM_LIBRARY} sensorsim)
 
-

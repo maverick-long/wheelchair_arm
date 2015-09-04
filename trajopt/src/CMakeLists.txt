@@ -16,7 +16,7 @@ add_definitions(-DEIGEN_DEFAULT_TO_ROW_MAJOR)
 
 find_package(GUROBI)
 if (NOT GUROBI_FOUND)
-  message("Gurobi not found. If you want to use Gurobi, set the GUROBI_HOME variable")
+  message(FATAL_ERROR "Gurobi not found. If you want to use Gurobi, set the GUROBI_HOME variable")
 else()
   message("Gurobi found")
   include_directories(${GUROBI_INCLUDE_DIRS})
@@ -40,6 +40,8 @@ endif()
 if(BUILD_SENSORSIM)
   add_subdirectory(sensorsim)
 endif()
+
+add_subdirectory(pclVisualizer)
 
 if(NOT APPLE)
 endif()

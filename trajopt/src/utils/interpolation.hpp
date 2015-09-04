@@ -1,3 +1,8 @@
+#ifndef TRAJOPT_INTERPOLATION_HPP
+#define TRAJOPT_INTERPOLATION_HPP
+
+#pragma once
+
 #include <Eigen/Core>
 
 namespace util {
@@ -37,3 +42,5 @@ MatrixT interp2d(const VectorT& xNew, const VectorT& xOld, const MatrixT& yOld) 
   return yNew;
 }
 }
+
+#endif // TRAJOPT_INTERPOLATION_HPP
