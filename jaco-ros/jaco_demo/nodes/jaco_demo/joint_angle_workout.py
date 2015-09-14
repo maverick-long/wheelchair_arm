@@ -24,7 +24,7 @@ def joint_angle_client(angle_set):
     goal = jaco_msgs.msg.ArmJointAnglesGoal()
 
     goal.angles.joint1 = angle_set[0]
-    goal.angles.joint2 = angle_set[1]
+    goal.angles.joint2 = angle_set[1]-0.17
     goal.angles.joint3 = angle_set[2]
     goal.angles.joint4 = angle_set[3]
     goal.angles.joint5 = angle_set[4]

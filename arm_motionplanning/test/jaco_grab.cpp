@@ -14,14 +14,15 @@ int main(){
 
   jaco_traj::JACOTraj grab_test;
 
-  vector<double> start_default = {0,0,0,0,0,0};
+  // vector<double> start_default = {0,0,0,0,0,0};
+  vector<double> start_default = {-1.794, -2.009, 0.8117, -0.878, 1.695, 3.190};
 
   Eigen::Affine3d affine(Eigen::Affine3d::Identity());
 
   grab_test.SeeViewer(true);
   grab_test.IdleViewer(true);
   grab_test.SetNumStep(30);
-  // grab_test.SetSmoothing(true);
+  grab_test.SetSmoothing(true);
 
   std::string debris = "debris";
   affine.translation() = Eigen::Vector3d(0.25, 0.3, 0.0);

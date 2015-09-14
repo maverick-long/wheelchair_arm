@@ -227,13 +227,18 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 
 	//SaveTraj(traj,activejoint,"trajectory.txt");
 
-	if(see_viewer && !smooth_traj){
-		ShowTraj(traj);
+	if(smooth_traj){
+		int issuccessful;
+		issuccessful = Smoothing(traj,100,true);
+		if(issuccessful ==0){
+			cout<<"smoothing fails"<<endl;
+			smooth_traj = 0;
+		}
+		if(see_viewer && idle_viewer)viewer->Idle();
 	}
 
-	if(smooth_traj){
-		Smoothing(traj,100,true);
-		viewer->Idle();	
+	if(see_viewer && !smooth_traj){
+		ShowTraj(traj);
 	}
 	
 	return traj;
@@ -368,7 +373,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 	Vector temp = robot->GetLink(hand_str)->GetTransform()*Vector(hand_offset[0], hand_offset[1], hand_offset[2]);
 
 	vector<double> hand_pose = TransformtoVector(robot->GetLink("jaco_link_hand")->GetTransform());
-	printcoll(hand_pose);
+
 	vector<double> jointprime;
 	vector<double> jointcoeff;
 
@@ -427,8 +432,8 @@ vector< Eigen::MatrixXf > JACOTraj::GenerateInitGuess(bool multi_initguess,vecto
 		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
 		initguess.push_back(Buildtraj(waypoints));
 	}else{
-		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, pose1, activejoint),affinetran));
-		// waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
+		// waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, pose1, activejoint),affinetran));
+		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
 		initguess.push_back(Buildtraj(waypoints));
 	}
 	return initguess;
@@ -469,20 +474,34 @@ Eigen::MatrixXf JACOTraj::Buildtraj(vector< vector<double> > waypoints){
 	return traj;
 }
 
-void JACOTraj::Smoothing(trajopt::TrajArray traj,int sample_rate,bool launchviewer){
+int JACOTraj::Smoothing(trajopt::TrajArray traj,int sample_rate,bool launchviewer){
 	TrajectoryBasePtr openravetraj = RaveCreateTrajectory(env,"");
 	openravetraj->Init(robot->GetActiveConfigurationSpecification());
 	int traj_size = traj.rows();
 	for(int i = 0;i<traj_size;i++){
 		openravetraj->Insert(i,getJointValuefromTraj(traj.row(i)));
 	}
-	planningutils::SmoothActiveDOFTrajectory(openravetraj,robot);
+	int issuccessful;
+	issuccessful = planningutils::SmoothActiveDOFTrajectory(openravetraj,robot);
+	if(issuccessful == 1){
 	std::ofstream outfile("traj.txt",ios::out);
 	outfile.precision(16);
 	openravetraj->serialize(outfile);
 	outfile.close();
 	cout<<"smoothing finished. waypoints: "<<openravetraj->GetNumWaypoints()<<endl;
+	ConfigurationSpecification::Group joint_values_group = openravetraj->GetConfigurationSpecification().GetGroupFromName("joint_values jaco 0 1 2 3 4 5 6 7 8");
+	ConfigurationSpecification joint_values_config(joint_values_group);
 	double unit = openravetraj->GetDuration()/sample_rate;
+	final_traj.resize(sample_rate);
+	for(int i=0;i<sample_rate;i++){
+		vector<double> data;
+		openravetraj->Sample(data,unit*i,joint_values_config);
+		final_traj[i].resize(6);
+		for(int j=0;j<6;j++){
+			final_traj[i][j] = data[j];
+		}
+		printcoll(final_traj[i]);
+	}
 	if(launchviewer){
 	viewer = OSGViewer::GetOrCreate(env);
 	for(int i=0;i<sample_rate;i++){
@@ -491,9 +510,11 @@ void JACOTraj::Smoothing(trajopt::TrajArray traj,int sample_rate,bool launchview
 		robot->SetActiveDOFValues(jointstate);
 		viewer->UpdateSceneData();
 		viewer->Draw();
-		Sleep(0.1);
+		Sleep(0.1);		
 	}
 	}
+}
+return issuccessful;
 }
 
 void JACOTraj::SeeViewer(bool see)
@@ -556,4 +577,16 @@ void JACOTraj::TransformObject(std::string& object, Eigen::Affine3d trans)
 	Transform obj_transform = Transform(Vector(q.w(),q.x(),q.y(),q.z()),Vector(pos.x(),pos.y(),pos.z()));
 
 	obj->SetTransform(obj_transform);
+}
+
+void JACOTraj::ResetEnvironment()
+{
+	env->Destroy();
+	env = OpenRAVE::RaveCreateEnvironment();
+	LoadRobot();
+	Defaults();
+}
+
+void JACOTraj::GetFinalTraj(vector< vector<double> >& final_traj){
+	final_traj = this->final_traj;
 }

@@ -21,6 +21,7 @@
 #include <openrave/openrave.h>
 #include <openrave-0.9/openrave-core.h>
 #include <openrave/planningutils.h>
+#include <openrave/trajectory.h>
 //#include <trajopt/problem_description.hpp>
 #include <utils/eigen_conversions.hpp>
 //#include <utils/interpolation.hpp>
@@ -279,7 +280,7 @@ public:
 	 * 			traj - generated trajectory
 	 * @return	None
 	 */
-	void Smoothing(trajopt::TrajArray traj,int sample_rate,bool launchviewer);
+	int Smoothing(trajopt::TrajArray traj,int sample_rate,bool launchviewer);
 
 	/**
 	 * @brief	Enable smoothing the trajectory
@@ -308,6 +309,13 @@ public:
 	 * @return  None
 	 */
 	void PreviewTraj(trajopt::TrajArray traj,vector<int> activejoint);
+
+	/**
+	 * @brief	Get Final Tragetory
+	 * @param	The Storage Pointer
+	 * @return 	None
+	 */
+	void GetFinalTraj(vector< vector<double> >& final_traj);
 
 
 
@@ -348,6 +356,8 @@ private:
 	vector<double> vel_cost;
 	vector<double> pos_cost;
 	vector<double> pos_vals;
+
+	vector< vector<double> > final_traj; 
 
 	/*Multithread data*/
 	struct thread_data{
