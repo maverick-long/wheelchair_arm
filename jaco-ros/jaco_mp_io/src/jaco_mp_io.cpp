@@ -48,6 +48,20 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 	jacoTrajectory->IdleViewer(true);
 	jacoTrajectory->SetNumStep(30);
 	jacoTrajectory->SetSmoothing(true);
+
+	/**test code for insert object**/
+	Eigen::Affine3d affine(Eigen::Affine3d::Identity());
+	std::string body = "box";
+  	affine.translation() = Eigen::Vector3d(-0.35, 0.0, 0.3);
+  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
+  	jacoTrajectory->Load(body);
+  	jacoTrajectory->TransformObject(body,affine);
+	std::string debris = "debris";
+  	affine.translation() = Eigen::Vector3d(0.0, -0.35, 0.2);
+  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
+  	jacoTrajectory->Load(debris);
+  	jacoTrajectory->TransformObject(debris,affine);
+
 	jacoTrajectory->ComputeTrajectory(*start_state, hand_target);
 	vector< vector<double> > final_traj;
 	jacoTrajectory->GetFinalTraj(final_traj);

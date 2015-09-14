@@ -90,12 +90,13 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 	OpenRAVE::EnvironmentMutex::scoped_lock lockenv(env->GetMutex());
 	//Handle viewer:
 	if(see_viewer) viewer = OSGViewer::GetOrCreate(env);
-	if(see_viewer && idle_viewer)viewer->Idle();
 
 	vector<int> activejoint = Getactivejoint(current_mode);
 	int current_active_dof = robot->GetActiveDOF();
 
 	UpdateStateForRequest(start_state, hand, current_mode);
+
+	if(see_viewer && idle_viewer)viewer->Idle();
 
 	vector< Eigen::MatrixXf > initguess;
 	if(load_waypoints){ //Load waypoints from file
@@ -411,8 +412,8 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 vector< Eigen::MatrixXf > JACOTraj::GenerateInitGuess(bool multi_initguess,vector<double> start_state, vector<double> target_state, vector<int> activejoint){
 	vector<double> affinetran = TransformtoVector(robot->GetTransform());
 
-	// vector<double> pose1 = {-1.0 , -2.0, 0.0, 0.0, 0.0, 0.0};
-	vector<double> pose1 = {1.0 , -1.5, 0.5, -1.57, 0.0, 0.0};
+	vector<double> pose1 = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	// vector<double> pose1 = {1.0 , -1.5, 0.5, -1.57, 0.0, 0.0};
 
 	vector<double> pose2 = {-0.00100474 ,0.000482999 ,-0.00182004 ,-7.23329e-23 ,0.00212896 ,0.0557431};
 	vector< vector<double> > waypoints = {concatenate_vectors(GetWholeJoint(robot, start_state, activejoint),affinetran)};
@@ -432,8 +433,8 @@ vector< Eigen::MatrixXf > JACOTraj::GenerateInitGuess(bool multi_initguess,vecto
 		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
 		initguess.push_back(Buildtraj(waypoints));
 	}else{
-		// waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, pose1, activejoint),affinetran));
-		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
+		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, pose1, activejoint),affinetran));
+		// waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
 		initguess.push_back(Buildtraj(waypoints));
 	}
 	return initguess;

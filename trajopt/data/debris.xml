@@ -1,0 +1,19 @@
+<KinBody name="debris">
+<translation> 0.0 0.0 0.0</translation>
+<!--   <Body name="debris" type="dynamic">
+    <Geom type="box">
+       <extents>.03 .03 .3</extents>
+       <diffuseColor>0.125 0.125 0.125</diffuseColor>
+    </Geom>
+  </Body> -->
+
+    <Body name="debris" type="dynamic">
+    <Geom type="box">
+      <extents>0.05 0.025 0.2</extents>
+      <!--<extents>0.01 0.01 0.38</extents>-->
+      <translation>0 0 0</translation>
+      <diffuseColor>1 0 0</diffuseColor>
+      <ambientColor>1 0 0</ambientColor>
+    </Geom>
+  </Body>
+</KinBody>

@@ -26,11 +26,11 @@ int main(int argc, char **argv)
     float32[3] hand_offset
     **/
     geometry_msgs::Pose pose;
-    pose.position.x = 0.2;
+    pose.position.x = -0.1;
     pose.position.y = -0.5;
     pose.position.z = 0.3;
     pose.orientation.w = 0.70711;
-    pose.orientation.x = -0.70711;
+    pose.orientation.x = 0.70711;
     pose.orientation.y = 0;
     pose.orientation.z = 0;
     command.hand_goal = pose;
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
     command.pos_gains[1] = 1;
     command.pos_gains[2] = 1;
     command.rot_gains[0] = 1;
-    command.rot_gains[1] = 1;
+    command.rot_gains[1] = 0;
     command.rot_gains[2] = 1;
     command.hand_offset[0] = 0;
     command.hand_offset[1] = 0;
