@@ -235,6 +235,17 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 			cout<<"smoothing fails"<<endl;
 			smooth_traj = 0;
 		}
+		else{
+			final_traj.resize(traj.rows());
+			for(int i=0;i<traj.rows();i++){
+				vector<double> data = GetMainJoint(getJointValuefromTraj(traj.row(i)),Getactivejoint(current_mode));				
+				final_traj[i].resize(6);
+				for(int j=0;j<6;j++){
+					final_traj[i][j] = data[j];
+				}		
+			printcoll(final_traj[i]);
+		}
+		}
 		if(see_viewer && idle_viewer)viewer->Idle();
 	}
 
