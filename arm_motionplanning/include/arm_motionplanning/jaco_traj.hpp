@@ -22,7 +22,10 @@
 #include <openrave-0.9/openrave-core.h>
 #include <openrave/planningutils.h>
 #include <openrave/trajectory.h>
-//#include <trajopt/problem_description.hpp>
+#include <trajopt/problem_description.hpp>
+#include "trajopt/trajectory_costs.hpp"
+#include "trajopt/kinematic_terms.hpp"
+#include "trajopt/collision_checker.hpp"
 #include <utils/eigen_conversions.hpp>
 //#include <utils/interpolation.hpp>
 #include <boost/thread/thread.hpp>
@@ -65,6 +68,9 @@ using namespace std;
 
 class JACOTraj
 {
+
+/* Mutex */ 
+	std::mutex g_i_mutex;
 
 public:
 	/**

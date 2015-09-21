@@ -118,6 +118,7 @@ include_directories(
 add_library(jaco_mp_io
   src/jaco_mp_io.cpp
   src/JointStateReceiver.cpp
+  src/PointCloudReceiver.cpp
 )
 
 ## Declare a cpp executable

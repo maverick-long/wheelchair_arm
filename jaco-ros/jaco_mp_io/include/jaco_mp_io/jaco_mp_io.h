@@ -5,6 +5,7 @@
 #include <arm_motionplanning/jaco_traj.hpp>
 #include <jaco_mp_io/ArmMotionPlanningCommand.h>
 #include <jaco_mp_io/JointStateReceiver.h>
+#include <jaco_mp_io/PointCloudReceiver.h>
 
 using namespace std;
 
@@ -20,10 +21,12 @@ public:
 
 private:
 	ros::NodeHandle mNode;
+	ros::NodeHandle nh;
 	ros::Subscriber ReceiveComputeTrajectoryTarget;
 	ros::Publisher	SendPlanResult;
 	boost::shared_ptr<jaco_traj::JACOTraj> jacoTrajectory;
 	boost::shared_ptr<JointStateReceiver> jsr;
+	boost::shared_ptr<PointCloudReceiver> pcr;
 
 	control_msgs::FollowJointTrajectoryGoal GenerateTrajMsg(vector< vector<double> >& final_traj);
 };

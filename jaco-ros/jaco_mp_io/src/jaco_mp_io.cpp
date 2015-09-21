@@ -8,7 +8,8 @@ JACOMotionPlannerIO::JACOMotionPlannerIO(std::string topicPrefix) : mNode(topicP
 {
 	ReceiveComputeTrajectoryTarget = mNode.subscribe("trajectory_target", 10, &JACOMotionPlannerIO::ComputeTrajectory, this);
 	SendPlanResult = mNode.advertise<control_msgs::FollowJointTrajectoryGoal>("joint_trajectory", 1);
-	jsr = boost::shared_ptr<JointStateReceiver>(new JointStateReceiver(mNode, "jaco_arm_driver/out/joint_state"));
+	jsr = boost::shared_ptr<JointStateReceiver>(new JointStateReceiver(nh, "jaco_arm_driver/out/joint_state"));
+	pcr = boost::shared_ptr<PointCloudReceiver>(new PointCloudReceiver(nh, "camera/depth_registered/points"));
 }
 
 JACOMotionPlannerIO::~JACOMotionPlannerIO(){
@@ -50,17 +51,48 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 	jacoTrajectory->SetSmoothing(true);
 
 	/**test code for insert object**/
-	Eigen::Affine3d affine(Eigen::Affine3d::Identity());
-	std::string body = "box";
-  	affine.translation() = Eigen::Vector3d(-0.35, 0.0, 0.3);
-  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
-  	jacoTrajectory->Load(body);
-  	jacoTrajectory->TransformObject(body,affine);
-	std::string debris = "debris";
-  	affine.translation() = Eigen::Vector3d(0.0, -0.35, 0.2);
-  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
-  	jacoTrajectory->Load(debris);
-  	jacoTrajectory->TransformObject(debris,affine);
+	// Eigen::Affine3d affine(Eigen::Affine3d::Identity());
+	// std::string body = "box";
+ //  	affine.translation() = Eigen::Vector3d(-0.35, 0.0, 0.3);
+ //  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
+ //  	jacoTrajectory->Load(body);
+ //  	jacoTrajectory->TransformObject(body,affine);
+	// std::string debris = "debris";
+ //  	affine.translation() = Eigen::Vector3d(0.0, -0.35, 0.2);
+ //  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
+ //  	jacoTrajectory->Load(debris);
+ //  	jacoTrajectory->TransformObject(debris,affine);
+
+	/**load point cloud**/
+	// if(load_pc)
+	// {
+	// 	if(load_saved_pc)
+	// 	{
+	// 		std::cout << "Loading save point cloud" << std::endl;
+	// 		jacoTrajectory->LoadSavedPointCloud(*joints);
+	// 		load_saved_pc = false;
+	// 	}else{
+
+	// 		OpenRAVE::Transform footPose = robot->GetLink("l_foot")->GetTransform();
+
+	// 		Eigen::Affine3d transform;
+
+	// 		transform.linear() = Eigen::Quaterniond(footPose.rot.x,footPose.rot.y,footPose.rot.z,footPose.rot.w).toRotationMatrix();
+	// 		transform.translation().x() = footPose.trans.x;
+	// 		transform.translation().y() = footPose.trans.y;
+	// 		transform.translation().z() = footPose.trans.z;
+			pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+			pcl::fromPCLPointCloud2(*pcr->updatePointCloud(), *cloudPtr);
+
+			Eigen::Affine3d transform(Eigen::Affine3d::Identity());
+
+			jacoTrajectory->PrepPointCloud(cloudPtr, transform);
+
+			jacoTrajectory->LoadPointCloud(*start_state);
+	// 	}
+	// }
+
 
 	jacoTrajectory->ComputeTrajectory(*start_state, hand_target);
 	vector< vector<double> > final_traj;

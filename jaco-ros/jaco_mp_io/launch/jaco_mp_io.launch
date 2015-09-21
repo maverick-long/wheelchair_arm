@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<launch>
+
+    <include file="$(find openni_launch)/launch/openni.launch">
+        <param name="depth_registration" value="true" />
+    </include>
+
+    <node name="rail_segmentation" pkg="rail_segmentation" type="rail_segmentation" >
+        <param name="debug" value="false" type="bool" />
+        <param name="point_cloud_topic" value="/camera/depth_registered/points" />
+        <param name="number_of_zones" value="1" />
+
+        <rosparam ns="zones">
+                zone0:  {
+                    name: "Default Zone",
+                    remove_surface: true,
+                    parent_frame_id: "base_link",
+                    child_frame_id: "camera_depth_frame",
+                    bounding_frame_id: "base_link",
+                    segmentation_frame_id: "base_link",
+                    z_min: 0.1,
+                    x_min: 0.1,
+                    x_max: 2.0
+                }
+        </rosparam>
+    </node>
+    
+    <node pkg="tf" type="static_transform_publisher" 
+        name="camera_link_to_base_link" 
+        args="-0.4318 0 1.524 0 0.68 0 /base_link /camera_link 40" />
+            <!-- The non-zero yaw value is purely from an experiment. theoretically it should be 0 -->
+            
+    <node name="rviz" pkg="rviz" type="rviz" 
+        args="-d $(find jaco_mp_io)/test/test_segmentation.rviz" />
+</launch>

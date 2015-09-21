@@ -127,6 +127,7 @@ add_library(arm_motionplanning
   src/jaco_costs.cpp
   src/jaco_utils.cpp
   src/jaco_debug.cpp
+  src/jaco_perception.cpp
 )
 
 ## Declare a cpp executable
