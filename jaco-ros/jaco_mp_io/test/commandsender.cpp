@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     pose.orientation.y = 0;
     pose.orientation.z = 0;
     command.hand_goal = pose;
-    command.load_pc = false;
+    command.load_pc = true;
     command.pos_gains[0] = 1;
     command.pos_gains[1] = 1;
     command.pos_gains[2] = 1;

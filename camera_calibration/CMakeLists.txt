@@ -1,25 +1,18 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(jaco_mp_io)
+project(camera_calibration)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  arm_motionplanning
-  geometry_msgs
-  control_msgs
+  ar_track_alvar
   roscpp
-  sensor_msgs
-  tf_conversions
-  pcl_ros
+  rospy
 )
 
-find_package(PCL 1.7 REQUIRED COMPONENTS common io)
-find_package(OpenRAVE REQUIRED)
-set(TRAJOPT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/wheelchair_arm/trajopt)
-
 ## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(Eigen REQUIRED)
+
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -51,10 +44,11 @@ set(TRAJOPT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/wheelchair_arm/trajopt)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  ArmMotionPlanningCommand.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -71,10 +65,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  geometry_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs  # Or other packages containing msgs
+# )
 
 ###################################
 ## catkin specific configuration ##
@@ -86,10 +80,10 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS include
- LIBRARIES jaco_mp_io
- CATKIN_DEPENDS arm_motionplanning geometry_msgs roscpp sensor_msgs tf_conversions control_msgs
- DEPENDS system_lib
+#  INCLUDE_DIRS include
+#  LIBRARIES camera_calibration
+#  CATKIN_DEPENDS ar_track_alvar roscpp rospy
+#  DEPENDS system_lib
 )
 
 ###########
@@ -98,50 +92,27 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-
+# include_directories(include)
 include_directories(
-  include
-  ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
-  ${CMAKE_SOURCE_DIR}/wheelchair_arm/arm_motionplanning/include
-  ${OpenRAVE_INCLUDE_DIRS}
-  ${PCL_INCLUDE_DIRS}
-  ${PCL_LIBRARY_DIRS}
-)
-
-include_directories(
-  ${TRAJOPT_SOURCE_DIR}/ext
-  ${TRAJOPT_SOURCE_DIR}/src
-  ${TRAJOPT_SOURCE_DIR}/ext/json/include
+  ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
-add_library(jaco_mp_io
-  src/jaco_mp_io.cpp
-  src/JointStateReceiver.cpp
-  src/PointCloudReceiver.cpp
-)
+# add_library(camera_calibration
+#   src/${PROJECT_NAME}/camera_calibration.cpp
+# )
 
 ## Declare a cpp executable
-add_executable(jaco_mp_io_node
-  src/jaco_mp_io_node.cpp)
-set_target_properties(jaco_mp_io_node PROPERTIES COMPILE_FLAGS "-std=c++0x")
-target_link_libraries(jaco_mp_io_node ${catkin_LIBRARIES} jaco_mp_io)
-
-add_executable(jaco_mp_command_sender
-  test/commandsender.cpp)
-set_target_properties(jaco_mp_command_sender PROPERTIES COMPILE_FLAGS "-std=c++0x")
-target_link_libraries(jaco_mp_command_sender ${catkin_LIBRARIES} jaco_mp_io)
+add_executable(camera_calibration src/camera_calibration.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-add_dependencies(jaco_mp_io arm_motionplanning geometry_msgs roscpp sensor_msgs tf_conversions control_msgs)
+# add_dependencies(camera_calibration_node camera_calibration_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-set_target_properties(jaco_mp_io PROPERTIES COMPILE_FLAGS "-std=c++0x")
-target_link_libraries(jaco_mp_io
+target_link_libraries(camera_calibration
   ${catkin_LIBRARIES}
-  arm_motionplanning
 )
 
 #############
@@ -159,7 +130,7 @@ target_link_libraries(jaco_mp_io
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS jaco_mp_io jaco_mp_io_node
+# install(TARGETS camera_calibration camera_calibration_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -184,7 +155,7 @@ target_link_libraries(jaco_mp_io
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_jaco_mp_io.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_camera_calibration.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

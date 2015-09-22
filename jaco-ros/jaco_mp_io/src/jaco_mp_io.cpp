@@ -64,34 +64,37 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
  //  	jacoTrajectory->TransformObject(debris,affine);
 
 	/**load point cloud**/
-	// if(load_pc)
-	// {
-	// 	if(load_saved_pc)
-	// 	{
-	// 		std::cout << "Loading save point cloud" << std::endl;
-	// 		jacoTrajectory->LoadSavedPointCloud(*joints);
-	// 		load_saved_pc = false;
-	// 	}else{
-
-	// 		OpenRAVE::Transform footPose = robot->GetLink("l_foot")->GetTransform();
-
-	// 		Eigen::Affine3d transform;
-
-	// 		transform.linear() = Eigen::Quaterniond(footPose.rot.x,footPose.rot.y,footPose.rot.z,footPose.rot.w).toRotationMatrix();
-	// 		transform.translation().x() = footPose.trans.x;
-	// 		transform.translation().y() = footPose.trans.y;
-	// 		transform.translation().z() = footPose.trans.z;
+	if(load_pc)
+	{
+		// if(load_saved_pc)
+		// {
+		// 	std::cout << "Loading save point cloud" << std::endl;
+		// 	jacoTrajectory->LoadSavedPointCloud(*joints);
+		// 	load_saved_pc = false;
+		// }else{
 			pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>);
 
 			pcl::fromPCLPointCloud2(*pcr->updatePointCloud(), *cloudPtr);
 
 			Eigen::Affine3d transform(Eigen::Affine3d::Identity());
+			// transform.linear() = Eigen::Quaterniond(0.70711,0,0,-0.70711).toRotationMatrix();
+			// transform.translation().x() = -0.3;
+			// transform.translation().y() = 0;
+			// transform.translation().z() = -1;
+
+			//////////// get transform matrix between camera and arm ///////////////////
+			// OpenRAVE::Transform armPose = robot->GetLink("jaco_link_base")->GetTransform();
+			// Eigen::Affine3d transform;
+			// transform.linear() = Eigen::Quaterniond(armPose.rot.x,armPose.rot.y,armPose.rot.z,armPose.rot.w).toRotationMatrix();
+			// transform.translation().x() = armPose.trans.x;
+			// transform.translation().y() = armPose.trans.y;
+			// transform.translation().z() = armPose.trans.z;
 
 			jacoTrajectory->PrepPointCloud(cloudPtr, transform);
 
 			jacoTrajectory->LoadPointCloud(*start_state);
-	// 	}
-	// }
+		// }
+	}
 
 
 	jacoTrajectory->ComputeTrajectory(*start_state, hand_target);

@@ -27,8 +27,18 @@
     
     <node pkg="tf" type="static_transform_publisher" 
         name="camera_link_to_base_link" 
-        args="0.933185 -0.190482 -0.022129 0.124138 -0.30831 -0.0113405 0.943083 /base_link /camera_link 40" />
+        args="-0.4318 0 1.524 0 0.65 0 /base_link /camera_link 40" />
             <!-- The non-zero yaw value is purely from an experiment. theoretically it should be 0 -->
+        
+    <arg name="marker_size" default="4.4" />
+    <arg name="max_new_marker_error" default="0.08" />
+    <arg name="max_track_error" default="0.2" />
+
+    <arg name="cam_image_topic" default="/camera/depth_registered/points" />
+    <arg name="cam_info_topic" default="/camera/rgb/camera_info" />        
+    <arg name="output_frame" default="/camera_link" />
+
+    <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)" />
 
     <node name="rviz" pkg="rviz" type="rviz" 
         args="-d $(find jaco_mp_io)/test/test_segmentation.rviz" />
