@@ -1,9 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+    
+    <arg name="use_ar" default="true"/>
 
     <include file="$(find openni_launch)/launch/openni.launch">
         <param name="depth_registration" value="true" />
     </include>
+    
+    <node pkg="tf" type="static_transform_publisher" 
+        name="camera_link_to_base_link" 
+        args="-0.418072 -0.312901 0.461324 -0.0138643 0.308936 0.091945 0.946526 /base_link /camera_link 40" />
+            <!-- The non-zero yaw value is purely from an experiment. theoretically it should be 0 -->
 
     <node name="rail_segmentation" pkg="rail_segmentation" type="rail_segmentation" >
         <param name="debug" value="false" type="bool" />
@@ -17,18 +24,25 @@
                     parent_frame_id: "base_link",
                     child_frame_id: "camera_depth_frame",
                     bounding_frame_id: "base_link",
-                    segmentation_frame_id: "base_link",
-                    z_min: 0.1,
-                    x_min: 0.1,
-                    x_max: 2.0
+                    segmentation_frame_id: "base_link"
                 }
         </rosparam>
     </node>
-    
-    <node pkg="tf" type="static_transform_publisher" 
-        name="camera_link_to_base_link" 
-        args="0.933185 -0.190482 -0.022129 0.124138 -0.30831 -0.0113405 0.943083 /base_link /camera_link 40" />
-            <!-- The non-zero yaw value is purely from an experiment. theoretically it should be 0 -->
+
+    <group if="$(arg use_ar)">
+
+    <arg name="marker_size" default="4.4" />
+    <arg name="max_new_marker_error" default="0.08" />
+    <arg name="max_track_error" default="0.2" />
+
+    <arg name="cam_image_topic" default="/camera/depth_registered/points" />
+    <arg name="cam_info_topic" default="/camera/rgb/camera_info" />        
+    <arg name="output_frame" default="/base_link" />
+
+    <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkers" respawn="false" output="screen" args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error) $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)" />
+
+    </group>
+
 
     <node name="rviz" pkg="rviz" type="rviz" 
         args="-d $(find jaco_mp_io)/test/test_segmentation.rviz" />

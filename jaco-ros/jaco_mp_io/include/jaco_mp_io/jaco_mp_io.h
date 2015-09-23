@@ -20,6 +20,9 @@ public:
 	void ComputeTrajectory(Eigen::Affine3d hand_target, bool load_pc, Eigen::Vector3d pos_gains, Eigen::Vector3d rot_gains, Eigen::Vector3d hand_offset);
 
 private:
+	/* Mutex */ 
+	std::mutex g_i_mutex;
+	
 	ros::NodeHandle mNode;
 	ros::NodeHandle nh;
 	ros::Subscriber ReceiveComputeTrajectoryTarget;

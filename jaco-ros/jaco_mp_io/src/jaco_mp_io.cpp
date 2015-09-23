@@ -6,7 +6,8 @@ namespace jaco{
 
 JACOMotionPlannerIO::JACOMotionPlannerIO(std::string topicPrefix) : mNode(topicPrefix), jacoTrajectory(new jaco_traj::JACOTraj())
 {
-	ReceiveComputeTrajectoryTarget = mNode.subscribe("trajectory_target", 10, &JACOMotionPlannerIO::ComputeTrajectory, this);
+	std::lock_guard<std::mutex> lock(g_i_mutex);
+	ReceiveComputeTrajectoryTarget = mNode.subscribe("trajectory_target", 1, &JACOMotionPlannerIO::ComputeTrajectory, this);
 	SendPlanResult = mNode.advertise<control_msgs::FollowJointTrajectoryGoal>("joint_trajectory", 1);
 	jsr = boost::shared_ptr<JointStateReceiver>(new JointStateReceiver(nh, "jaco_arm_driver/out/joint_state"));
 	pcr = boost::shared_ptr<PointCloudReceiver>(new PointCloudReceiver(nh, "camera/depth_registered/points"));
@@ -17,6 +18,7 @@ JACOMotionPlannerIO::~JACOMotionPlannerIO(){
 }
 
 void JACOMotionPlannerIO::ComputeTrajectory(const jaco_mp_io::ArmMotionPlanningCommandPtr& command){ 
+	std::lock_guard<std::mutex> lock(g_i_mutex);
 	Eigen::Affine3d hand_target;
 	hand_target.translation()[0] = command->hand_goal.position.x;
 	hand_target.translation()[1] = command->hand_goal.position.y;
@@ -39,6 +41,8 @@ void JACOMotionPlannerIO::ComputeTrajectory(const jaco_mp_io::ArmMotionPlanningC
 	hand_offset[1] = command->hand_offset[1];
 	hand_offset[2] = command->hand_offset[2];
 
+	jacoTrajectory->SetMode((jaco_traj::TrajoptMode)command->mode);
+
 	JACOMotionPlannerIO::ComputeTrajectory(hand_target, command->load_pc, pos_gains, rot_gains, hand_offset);
 }
 
@@ -48,20 +52,7 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 	jacoTrajectory->SeeViewer(true);
 	jacoTrajectory->IdleViewer(true);
 	jacoTrajectory->SetNumStep(30);
-	jacoTrajectory->SetSmoothing(true);
-
-	/**test code for insert object**/
-	// Eigen::Affine3d affine(Eigen::Affine3d::Identity());
-	// std::string body = "box";
- //  	affine.translation() = Eigen::Vector3d(-0.35, 0.0, 0.3);
- //  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
- //  	jacoTrajectory->Load(body);
- //  	jacoTrajectory->TransformObject(body,affine);
-	// std::string debris = "debris";
- //  	affine.translation() = Eigen::Vector3d(0.0, -0.35, 0.2);
- //  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
- //  	jacoTrajectory->Load(debris);
- //  	jacoTrajectory->TransformObject(debris,affine);
+	jacoTrajectory->SetSmoothing(false);
 
 	/**load point cloud**/
 	if(load_pc)
@@ -77,7 +68,7 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 			pcl::fromPCLPointCloud2(*pcr->updatePointCloud(), *cloudPtr);
 
 			Eigen::Affine3d transform(Eigen::Affine3d::Identity());
-			// transform.linear() = Eigen::Quaterniond(0.70711,0,0,-0.70711).toRotationMatrix();
+			transform.linear() = Eigen::Quaterniond(0.70711,0,0,-0.70711).toRotationMatrix();
 			// transform.translation().x() = -0.3;
 			// transform.translation().y() = 0;
 			// transform.translation().z() = -1;
@@ -96,6 +87,18 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 		// }
 	}
 
+	/**test code for insert object**/
+	Eigen::Affine3d affine(Eigen::Affine3d::Identity());
+	std::string box = "box";
+  	affine.translation() = Eigen::Vector3d(-0.55, 0.2, 0.3);
+  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
+  	jacoTrajectory->Load(box);
+  	jacoTrajectory->TransformObject(box,affine);
+	// std::string debris = "debris";
+ //  	affine.translation() = Eigen::Vector3d(0.0, -0.35, 0.2);
+ //  	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
+ //  	jacoTrajectory->Load(debris);
+ //  	jacoTrajectory->TransformObject(debris,affine);
 
 	jacoTrajectory->ComputeTrajectory(*start_state, hand_target);
 	vector< vector<double> > final_traj;

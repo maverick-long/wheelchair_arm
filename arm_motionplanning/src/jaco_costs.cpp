@@ -22,7 +22,7 @@ void JACOTraj::SetTorqueCost(vector<double>& tau_cost,TrajoptMode mode){
 	vector<double> majorjoints_cost;
 
 	switch(mode){
-	case TrajoptMode::Door:
+	case TrajoptMode::GraspObject:
 		majorjoints_cost = {
 				0,	0,	0,	0,	0,	0
 		};
@@ -242,9 +242,14 @@ void JACOTraj::AddJointPrime(stringstream& request, TrajoptMode mode, int start_
 	vector<double> jointcoeff;
 
 	switch(mode){
-	default:
-		jointcoeff = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-		jointprime = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+		case TrajoptMode::ReturntoHomePose:
+			jointcoeff = {1.0,1.0,1.0,1.0,1.0,1.0};
+			jointprime = {-1.794, -2.009, 0.8117, -0.878, 1.695, 3.190};
+			break;
+
+		default:
+			jointcoeff = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+			jointprime = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	}
 
 	vector<double> pos_vals  = GetWholeJoint(robot, jointprime, Getactivejoint(TrajoptMode::Default));

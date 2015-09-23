@@ -84,7 +84,7 @@ void JACOTraj::LoadPointCloud(vector<double> start_state,TrajoptMode mode){
 		viewer->Draw();
 		Sleep(0.2);
 	}
-	if(see_viewer && idle_viewer)viewer->Idle();
+	// if(see_viewer && idle_viewer)viewer->Idle();
 }
 
 bool JACOTraj::PrepPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr, Eigen::Affine3d trans)
