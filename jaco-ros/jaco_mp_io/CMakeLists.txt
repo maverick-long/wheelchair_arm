@@ -54,6 +54,9 @@ set(TRAJOPT_SOURCE_DIR ${CMAKE_SOURCE_DIR}/wheelchair_arm/trajopt)
 add_message_files(
   FILES
   ArmMotionPlanningCommand.msg
+  GrabCommand.msg
+  LoadObject.msg
+  SetProblemParameters.msg
 )
 
 ## Generate services in the 'srv' folder

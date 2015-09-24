@@ -9,7 +9,7 @@
     
     <node pkg="tf" type="static_transform_publisher" 
         name="camera_link_to_base_link" 
-        args="-0.418072 -0.312901 0.461324 -0.0138643 0.308936 0.091945 0.946526 /base_link /camera_link 40" />
+        args="-0.41457 -0.352448 0.455748 -0.00300914 0.30437 0.0845924 0.948786 /base_link /camera_link 40" />
             <!-- The non-zero yaw value is purely from an experiment. theoretically it should be 0 -->
 
     <node name="rail_segmentation" pkg="rail_segmentation" type="rail_segmentation" >

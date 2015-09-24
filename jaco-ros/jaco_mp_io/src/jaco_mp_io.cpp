@@ -8,9 +8,16 @@ JACOMotionPlannerIO::JACOMotionPlannerIO(std::string topicPrefix) : mNode(topicP
 {
 	std::lock_guard<std::mutex> lock(g_i_mutex);
 	ReceiveComputeTrajectoryTarget = mNode.subscribe("trajectory_target", 1, &JACOMotionPlannerIO::ComputeTrajectory, this);
+	loadObjectTopic = mNode.subscribe("load_object", 1, &JACOMotionPlannerIO::LoadObject, this);
+	grabTopic = mNode.subscribe("grab", 1, &JACOMotionPlannerIO::Grab, this);
+	SetProblemParametersTopic = mNode.subscribe("problem_parameters", 1, &JACOMotionPlannerIO::SetProblemParameters, this);
 	SendPlanResult = mNode.advertise<control_msgs::FollowJointTrajectoryGoal>("joint_trajectory", 1);
 	jsr = boost::shared_ptr<JointStateReceiver>(new JointStateReceiver(nh, "jaco_arm_driver/out/joint_state"));
 	pcr = boost::shared_ptr<PointCloudReceiver>(new PointCloudReceiver(nh, "camera/depth_registered/points"));
+
+	pcl::PointCloud<pcl::PointXYZRGB>::Ptr savedcloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>);
+	save_pc = false;
+	load_saved_pc = false;
 }
 
 JACOMotionPlannerIO::~JACOMotionPlannerIO(){
@@ -41,7 +48,7 @@ void JACOMotionPlannerIO::ComputeTrajectory(const jaco_mp_io::ArmMotionPlanningC
 	hand_offset[1] = command->hand_offset[1];
 	hand_offset[2] = command->hand_offset[2];
 
-	jacoTrajectory->SetMode((jaco_traj::TrajoptMode)command->mode);
+	// jacoTrajectory->SetMode((jaco_traj::TrajoptMode)command->mode);
 
 	JACOMotionPlannerIO::ComputeTrajectory(hand_target, command->load_pc, pos_gains, rot_gains, hand_offset);
 }
@@ -52,21 +59,30 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 	jacoTrajectory->SeeViewer(true);
 	jacoTrajectory->IdleViewer(true);
 	jacoTrajectory->SetNumStep(30);
-	jacoTrajectory->SetSmoothing(false);
 
 	/**load point cloud**/
 	if(load_pc)
 	{
-		// if(load_saved_pc)
-		// {
-		// 	std::cout << "Loading save point cloud" << std::endl;
-		// 	jacoTrajectory->LoadSavedPointCloud(*joints);
-		// 	load_saved_pc = false;
-		// }else{
-			pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>);
+		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr;
+		if(load_saved_pc)
+		{
+			std::cout << "Loading save point cloud" << std::endl;
+			cloudPtr = savedcloudPtr;
+			load_saved_pc = false;
+		}else{
+			cloudPtr.reset(new pcl::PointCloud<pcl::PointXYZRGB>()); 
 
 			pcl::fromPCLPointCloud2(*pcr->updatePointCloud(), *cloudPtr);
 
+			if(save_pc){
+				std::cout<<"Saving point cloud"<< std::endl;
+				savedcloudPtr.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
+				pcl::copyPointCloud(*cloudPtr, *savedcloudPtr);
+				std::cout<<"point cloud saved"<< std::endl;
+				// pcl::fromPCLPointCloud2(*pcr->updatePointCloud(), *savedcloudPtr);
+				save_pc = false;
+			}
+		}
 			Eigen::Affine3d transform(Eigen::Affine3d::Identity());
 			transform.linear() = Eigen::Quaterniond(0.70711,0,0,-0.70711).toRotationMatrix();
 			// transform.translation().x() = -0.3;
@@ -125,5 +141,62 @@ control_msgs::FollowJointTrajectoryGoal JACOMotionPlannerIO::GenerateTrajMsg(vec
 		}
 	}
 	return goal;
+}
+
+void JACOMotionPlannerIO::Grab(const jaco_mp_io::GrabCommandPtr& message)
+{
+
+	// std::lock_guard<std::mutex> lock(g_i_mutex);
+	std::string name(message->file_name.data);
+
+	if(message->grab == true)
+	{
+		boost::shared_ptr<std::vector<double>> joints = jsr->updateJoints();
+		std::cout << "Grabbing object " << name << std::endl;
+		jacoTrajectory->GrabObject(*joints,name);
+	}else{
+  		std::cout << "Releasing object " << name << std::endl;
+		jacoTrajectory->ReleaseObject(name);
+	}
+}
+
+void JACOMotionPlannerIO::LoadObject(const jaco_mp_io::LoadObjectPtr& message)
+{
+
+	// std::lock_guard<std::mutex> lock(g_i_mutex);
+	std::string name(message->file_name.data);
+
+	Eigen::Affine3d command;
+
+	command.translation()[0] = message->pose.position.x;
+	command.translation()[1] = message->pose.position.y;
+	command.translation()[2] = message->pose.position.z;
+
+	Eigen::Quaterniond quat(message->pose.orientation.w, message->pose.orientation.x,message->pose.orientation.y,message->pose.orientation.z);
+	command.linear() = quat.toRotationMatrix();
+
+  	std::cout << "Loading object " << name << std::endl;
+	jacoTrajectory->Load(name);
+	std::cout << "Transforming object " << name << std::endl;
+
+	// geometry_msgs::Quaternion footQ= *fr->updateFoot();
+	// OpenRAVE::Vector footOrientation(footQ.w,footQ.x,footQ.y,footQ.z); // expects x, y ,z, w
+
+	// 	////POSSIBLE ERROR - if orientation looks wrong, it may be that the mapping is wrong
+	// 	// eg geometry.x = openrave.w, geometry.y = openrave.x, geometry.z = openrave.y, geometry.w = openrave.z
+	// jacoTrajectory->SetLFootFrame(OpenRAVE::Transform(footOrientation, OpenRAVE::Vector(0,0,0,0)));
+
+	jacoTrajectory->TransformObject(name,command);
+
+}
+
+void JACOMotionPlannerIO::SetProblemParameters(const jaco_mp_io::SetProblemParametersPtr& message)
+{
+	// std::lock_guard<std::mutex> lock(g_i_mutex);
+	jacoTrajectory->SetMode((jaco_traj::TrajoptMode)message->mode);
+	jacoTrajectory->SetNumStep(message->num_step);
+	jacoTrajectory->SetSmoothing(message->smoothing);
+	save_pc = message->save_pc;
+	load_saved_pc = message->load_saved_pc;
 }
 };

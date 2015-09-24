@@ -422,7 +422,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			//AddJointPositionCostorConstraint(request, pos_cost , pos_vals);
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
-			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-8,num_step-8,{hand_offset[0],hand_offset[1],hand_offset[2]-0.1});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-5,num_step-5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.2});
 			AddJointPrime(request, mode, 1, num_step-1);
 			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddConstraintEnd(request,request_traj);
@@ -433,6 +433,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddCostHead(request,vel_cost);
 			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddPoseCostorConstraint(request,hand_str,{current_xyz_target[0]+0.2,current_xyz_target[1],current_xyz_target[2]},quat_target,{100,100,100},rot_gains,10,10,{0,0,0});
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,{0,0,0},rot_gains,1,num_step-1,{0,0,0});
@@ -478,7 +479,7 @@ vector< Eigen::MatrixXf > JACOTraj::GenerateInitGuess(bool multi_initguess,vecto
 	vector<double> pose1 = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	// vector<double> pose1 = {1.0 , -1.5, 0.5, -1.57, 0.0, 0.0};
 
-	vector<double> pose2 = {-1.63088, 0.0664171, -0.379394, -2.51869, -1.18696, 3.19};
+	vector<double> pose2 = {-1.63088, -2.009, -0.379394, -2.51869, -1.18696, 3.19};
 	vector< vector<double> > waypoints = {concatenate_vectors(GetWholeJoint(robot, start_state, activejoint),affinetran)};
 	vector< Eigen::MatrixXf > initguess;
 	if (multi_initguess){
@@ -622,6 +623,58 @@ void JACOTraj::Load(std::string& object_name)
 	ss << "/data/" << object_name << ".xml";
 
 	env->Load(ss.str());
+}
+
+void JACOTraj::ReleaseObject(std::string& object_name)
+{
+	KinBodyPtr obj = env->GetKinBody(object_name);
+	robot = env->GetRobot("atlas");
+	robot->Release(obj);
+}
+
+void JACOTraj::GrabObject(vector<double> start_state, std::string& object_name){
+	KinBodyPtr obj = env->GetKinBody(object_name);
+	KinBody::LinkPtr link;
+
+	vector<int> activejoint = Getactivejoint(TrajoptMode::Default);
+	robot = env->GetRobot("jaco");
+	robot->SetDOFValues(start_state,1,activejoint);
+	int current_active_dof = robot->GetActiveDOF();
+	//robot->SetActiveDOFs(vector_arange(current_active_dof),DOF_Transform);
+	
+	link = robot->GetLink("jaco_link_hand");
+
+	std::cout << "About to grab: " << std::endl;
+	robot->Grab(obj,link);
+
+
+	/**************OR check if object is close to hand?*****************/
+	// double dist_hand_to_object = 0.4;
+
+	// trajopt::CollisionCheckerPtr checker = trajopt::CollisionChecker::GetOrCreate(*env);
+	// trajopt::vector<trajopt::Collision> collisions2;
+	// checker->SetContactDistance(dist_hand_to_object);
+
+	// //Could be improved by implementing single pair collision checking:
+	// checker->BodyVsAll(*obj,collisions2,-1);
+
+	// std::cout << object_name << std::endl;
+
+	// for(int u = 0 ; u < collisions2.size(); u++)
+	// {
+	// 	//If under minimum distance:
+	// 	if((collisions2[u].linkB->GetName() == link->GetName()) || (collisions2[u].linkA->GetName() == link->GetName()))
+	// 	{
+	// 		std::cout << "Object under " << dist_hand_to_object << "m to the hand" << std::endl;
+	// 		std::cout << "About to grab: " << std::endl;
+	// 		robot->Grab(obj,link);
+	// 		return;
+	// 	}
+	// }
+
+	// //Else:
+	// std::cout << "Hand is TOO FAR from object, not grasping ( greater then " << dist_hand_to_object << " away)"<< std::endl;
+	// return;
 }
 
 void JACOTraj::TransformObject(std::string& object, Eigen::Affine3d trans)
