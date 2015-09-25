@@ -43,6 +43,7 @@ private:
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr savedcloudPtr;
 	bool save_pc;
 	bool load_saved_pc;
+	std::vector<double> savedstate;
 
 	control_msgs::FollowJointTrajectoryGoal GenerateTrajMsg(vector< vector<double> >& final_traj);
 };

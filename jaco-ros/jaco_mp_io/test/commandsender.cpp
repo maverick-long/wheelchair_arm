@@ -118,43 +118,61 @@ int main(int argc, char **argv)
       case 1:
       sendparameters(problemparameters_pub, 1);
       ros::Duration(0.5).sleep();
-      sendcommand(command_pub,{-0.15,-0.47,-0.05,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
+      sendcommand(command_pub,{-0.15,-0.47,-0.08,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
       std::cin.get();
       break;
 
       case 2:      
-      // loadobject_command.file_name.data = "cylinder";     
-      // object_pose.position.x = -0.15;
-      // object_pose.position.y = -0.47;
-      // object_pose.position.z = -0.05;
-      // object_pose.orientation.w = 0.70711;
-      // object_pose.orientation.x = 0.70711;
-      // object_pose.orientation.y = 0;
-      // object_pose.orientation.z = 0;
-      // loadobject_command.pose = object_pose;
-      // loadobject_pub.publish(loadobject_command);
-      // ros::Duration(0.5).sleep();
+      loadobject_command.file_name.data = "cylinder";     
+      object_pose.position.x = -0.15;
+      object_pose.position.y = -0.47;
+      object_pose.position.z = -0.05;
+      object_pose.orientation.w = 0.70711;
+      object_pose.orientation.x = 0.70711;
+      object_pose.orientation.y = 0;
+      object_pose.orientation.z = 0;
+      loadobject_command.pose = object_pose;
+      loadobject_pub.publish(loadobject_command);
+      ros::Duration(0.5).sleep();
       
-      // grab_command.file_name.data = "cylinder";
-      // grab_command.grab = true;
-      // grabobject_pub.publish(grab_command);
-      // ros::Duration(0.5).sleep();
-      sendparameters(problemparameters_pub, 2, true,true,false);
+      grab_command.file_name.data = "cylinder";
+      grab_command.grab = true;
+      grabobject_pub.publish(grab_command);
       ros::Duration(0.5).sleep();
 
-      sendcommand(command_pub,{-0.48,-0.1,0.1,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
+      sendparameters(problemparameters_pub, 2, true,true,false);
+      ros::Duration(0.5).sleep();
+      sendcommand(command_pub,{-0.48,-0.1,-0.05,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
       std::cin.get();
       break;
 
-      case 3:   
-      sendparameters(problemparameters_pub, 1, true,false,true);
+      case 3:
+      loadobject_command.file_name.data = "cylinder";     
+      object_pose.position.x = -0.48;
+      object_pose.position.y = -0.1;
+      object_pose.position.z = -0.05;
+      object_pose.orientation.w = 0.70711;
+      object_pose.orientation.x = 0.70711;
+      object_pose.orientation.y = 0;
+      object_pose.orientation.z = 0;
+      loadobject_command.pose = object_pose;
+      loadobject_pub.publish(loadobject_command);
+      ros::Duration(0.5).sleep();
+      
+      grab_command.file_name.data = "cylinder";
+      grab_command.grab = true;
+      grabobject_pub.publish(grab_command);
+      ros::Duration(0.5).sleep();
+
+      sendparameters(problemparameters_pub, 2, true,false,true);
       ros::Duration(0.5).sleep();   
-      sendcommand(command_pub,{-0.26,-0.47,-0.05,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
+      sendcommand(command_pub,{-0.15,-0.47,-0.08,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
       std::cin.get();
       break;
 
       case 4:
       sendparameters(problemparameters_pub, 4);
+      ros::Duration(0.5).sleep(); 
       sendcommand(command_pub,{-0.48,-0.1,0.15,0.70711,0.70711,0,0},{1,1,1},{1,0,1},{0,0,-0.17});
       std::cin.get();
       break;

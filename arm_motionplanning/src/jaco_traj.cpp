@@ -422,7 +422,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			//AddJointPositionCostorConstraint(request, pos_cost , pos_vals);
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
-			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-5,num_step-5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.2});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-5,num_step-5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.3});
 			AddJointPrime(request, mode, 1, num_step-1);
 			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddConstraintEnd(request,request_traj);
@@ -433,7 +433,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddCostHead(request,vel_cost);
 			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
-			AddPoseCostorConstraint(request,hand_str,{current_xyz_target[0]+0.2,current_xyz_target[1],current_xyz_target[2]},quat_target,{100,100,100},rot_gains,10,10,{0,0,0});
+			// AddPoseCostorConstraint(request,hand_str,{current_xyz_target[0]+0.2,current_xyz_target[1],current_xyz_target[2]},quat_target,{100,100,100},rot_gains,10,10,{0,0,0});
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,{0,0,0},rot_gains,1,num_step-1,{0,0,0});
@@ -479,7 +479,7 @@ vector< Eigen::MatrixXf > JACOTraj::GenerateInitGuess(bool multi_initguess,vecto
 	vector<double> pose1 = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
 	// vector<double> pose1 = {1.0 , -1.5, 0.5, -1.57, 0.0, 0.0};
 
-	vector<double> pose2 = {-1.63088, -2.009, -0.379394, -2.51869, -1.18696, 3.19};
+	vector<double> pose2 = {-1.27, -0.097, 1, -2.335, -1.066, 4.6};//-1.27, -0.097, 0.76, -2.335, -1.066, 4.6//-1.63088, -2.009, -0.379394, -2.51869, -1.18696, 3.19
 	vector< vector<double> > waypoints = {concatenate_vectors(GetWholeJoint(robot, start_state, activejoint),affinetran)};
 	vector< Eigen::MatrixXf > initguess;
 	if (multi_initguess){

@@ -18,6 +18,7 @@ JACOMotionPlannerIO::JACOMotionPlannerIO(std::string topicPrefix) : mNode(topicP
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr savedcloudPtr(new pcl::PointCloud<pcl::PointXYZRGB>);
 	save_pc = false;
 	load_saved_pc = false;
+	savedstate = {};
 }
 
 JACOMotionPlannerIO::~JACOMotionPlannerIO(){
@@ -66,9 +67,8 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 		pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr;
 		if(load_saved_pc)
 		{
-			std::cout << "Loading save point cloud" << std::endl;
+			std::cout << "Loading saved point cloud" << std::endl;
 			cloudPtr = savedcloudPtr;
-			load_saved_pc = false;
 		}else{
 			cloudPtr.reset(new pcl::PointCloud<pcl::PointXYZRGB>()); 
 
@@ -78,6 +78,10 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 				std::cout<<"Saving point cloud"<< std::endl;
 				savedcloudPtr.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
 				pcl::copyPointCloud(*cloudPtr, *savedcloudPtr);
+				savedstate.clear();
+				for(int i=0;i<start_state->size();i++){
+					savedstate.push_back(start_state->at(i));
+				}
 				std::cout<<"point cloud saved"<< std::endl;
 				// pcl::fromPCLPointCloud2(*pcr->updatePointCloud(), *savedcloudPtr);
 				save_pc = false;
@@ -98,15 +102,21 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 			// transform.translation().z() = armPose.trans.z;
 
 			jacoTrajectory->PrepPointCloud(cloudPtr, transform);
-
-			jacoTrajectory->LoadPointCloud(*start_state);
+			if(load_saved_pc){
+				std::cout<<"Loading saved state: "<<savedstate[0]<<","<<savedstate[1]<<","<<savedstate[2]<<std::endl;
+				jacoTrajectory->LoadPointCloud(savedstate);
+				load_saved_pc = false;
+			}
+			else{
+				jacoTrajectory->LoadPointCloud(*start_state);
+			}		
 		// }
 	}
 
 	/**test code for insert object**/
 	Eigen::Affine3d affine(Eigen::Affine3d::Identity());
 	std::string box = "box";
-  	affine.translation() = Eigen::Vector3d(-0.55, 0.2, 0.3);
+  	affine.translation() = Eigen::Vector3d(-0.55, 0.25, 0.3);
   	affine.linear() = Eigen::Quaterniond(1,0,0,0).toRotationMatrix();
   	jacoTrajectory->Load(box);
   	jacoTrajectory->TransformObject(box,affine);
