@@ -396,6 +396,10 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 
 	vector<double> hand_pose = TransformtoVector(robot->GetLink("jaco_link_hand")->GetTransform());
 
+	vector<double> root_xyz;
+	vector<double> root_quat;
+	GetLinkPosandQuat("root", root_xyz, root_quat);
+
 	vector<double> jointprime;
 	vector<double> jointcoeff;
 
@@ -423,6 +427,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-5,num_step-5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.3});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
 			AddJointPrime(request, mode, 1, num_step-1);
 			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddConstraintEnd(request,request_traj);
@@ -437,7 +442,21 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,{0,0,0},rot_gains,1,num_step-1,{0,0,0});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
 			AddJointPrime(request, mode, 1, num_step-1);
+			AddConstraintEnd(request,request_traj);
+			break;
+
+		case TrajoptMode::SwitchObject:
+			AddRequestHead(request);
+			AddCostHead(request,vel_cost);
+			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddCostEnd(request);
+			AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,5,5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.3});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-5,num_step-5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.3});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
 			AddConstraintEnd(request,request_traj);
 			break;
 
@@ -448,6 +467,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,5,5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.3});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
 			AddJointPrime(request, mode, num_step-1, num_step-1);
 			AddConstraintEnd(request,request_traj);
 			break;
@@ -465,8 +485,8 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-8,num_step-8,{hand_offset[0],hand_offset[1],hand_offset[2]-0.1});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
 			AddJointPrime(request, mode, 1, num_step-1);
-			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddConstraintEnd(request,request_traj);
 			break;
 	}
@@ -694,6 +714,12 @@ void JACOTraj::TransformObject(std::string& object, Eigen::Affine3d trans)
 	Transform obj_transform = Transform(Vector(q.w(),q.x(),q.y(),q.z()),Vector(pos.x(),pos.y(),pos.z()));
 
 	obj->SetTransform(obj_transform);
+}
+
+void JACOTraj::GetLinkPosandQuat(string linkname, vector<double>& xyz, vector<double>& quat){
+	vector<double> transform_vector= TransformtoVector(robot->GetLink(linkname)->GetTransform());
+	xyz={transform_vector[0],transform_vector[1],transform_vector[2]};
+	quat={transform_vector[3],transform_vector[4],transform_vector[5],transform_vector[6]};
 }
 
 void JACOTraj::ResetEnvironment()

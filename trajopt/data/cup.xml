@@ -1,5 +1,5 @@
-<KinBody name="cylinder">
-  <Body name="cylinder" type="dynamic">
+<KinBody name="cup">
+  <Body name="cup" type="dynamic">
     <Translation>0 0 0</Translation>
     <!--rotation of the body specified as a rotation axis. First three numbers are the axis.-->
     <Mass type="mimicgeom">
@@ -7,7 +7,7 @@
     </Mass> 
     <Geom type="cylinder">
       <radius>.03</radius>
-      <height>.3</height>
+      <height>.05</height>
       <!-- <translation>-.05</translation> -->
       <!-- <rotationaxis>0 0 1 90</rotationaxis> -->
    	</Geom>

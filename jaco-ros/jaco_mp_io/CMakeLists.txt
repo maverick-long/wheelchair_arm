@@ -136,6 +136,11 @@ add_executable(jaco_mp_command_sender
 set_target_properties(jaco_mp_command_sender PROPERTIES COMPILE_FLAGS "-std=c++0x")
 target_link_libraries(jaco_mp_command_sender ${catkin_LIBRARIES} jaco_mp_io)
 
+add_executable(jaco_mp_grab_test
+  test/grabmultipleobjects.cpp)
+set_target_properties(jaco_mp_grab_test PROPERTIES COMPILE_FLAGS "-std=c++0x")
+target_link_libraries(jaco_mp_grab_test ${catkin_LIBRARIES} jaco_mp_io)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 add_dependencies(jaco_mp_io arm_motionplanning geometry_msgs roscpp sensor_msgs tf_conversions control_msgs)

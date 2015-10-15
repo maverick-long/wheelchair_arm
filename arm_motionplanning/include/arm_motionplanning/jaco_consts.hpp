@@ -15,6 +15,7 @@ enum class TrajoptMode : int {
 	Default = 0,
 	GraspObject = 1,
 	MovetoHuman = 2,
+	SwitchObject = 3,
 	ReturntoHomePose = 4
 };
 

@@ -216,7 +216,7 @@ bool JACOTraj::PrepPointCloud(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudPtr, E
 
 	g_i_mutex.lock();
 	//Concativity : highly influence smoothness vs. polygon size.
-	convexhulls = ConvexDecompHACD(*simpleMesh, 50);
+	convexhulls = ConvexDecompHACD(*simpleMesh, 25);
 
 	//Copy the simplified mesh into the global state polygonmesh
 	polygonmesh = *simpleMesh;
