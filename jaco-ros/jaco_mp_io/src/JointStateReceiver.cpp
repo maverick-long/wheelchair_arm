@@ -7,7 +7,8 @@ currentJoints(new std::vector<double>),
 latestJoints(new sensor_msgs::JointState)
 {
 
-	latestJoints->position = {-1.794,-2.009,0.8117,-0.878,1.695,3.190};
+	// latestJoints->position = {-1.794,-2.009,0.8117,-0.878,1.695,3.190};
+	latestJoints->position = {-2.46326, 0.121373, -0.727753, -2.32831, -0.481928, 2.996};
 
 	nh_ = nh;
 
