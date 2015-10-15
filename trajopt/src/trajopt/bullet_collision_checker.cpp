@@ -544,6 +544,12 @@ void BulletCollisionChecker::AddKinBody(const OR::KinBodyPtr& body) {
   CDPtr cd(new KinBodyCollisionData(body));
 
   int filterGroup = body->IsRobot() ? RobotFilter : KinBodyFilter;
+  if(filterGroup==KinBodyFilter){
+    std::vector< RobotBasePtr > robots; 
+    m_env->GetRobots(robots);
+    if(robots.size()>0)
+    filterGroup = robots[0]->IsGrabbing(body) ? RobotFilter :KinBodyFilter;
+  }
   const vector<OR::KinBody::LinkPtr> links = body->GetLinks();
 
   trajopt::SetUserData(*body, "bt", cd);
