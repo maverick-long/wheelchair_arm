@@ -12,6 +12,10 @@
 #include "jaco_driver/jaco_trajectory_angles_action.h"
 
 #include "jaco_driver/jaco_types.h"
+
+#include <iostream>
+#include <fstream>
+
 using namespace std;
 namespace jaco
 {
@@ -147,8 +151,13 @@ void JacoTrajectoryAnglesActionServer::actionCallback(const control_msgs::Follow
   trajPoint.InitStruct();
   ros::Rate rate(rate_hz_);
 
+  std::vector< std::vector<double> > desirejointvalue, actualjointvalue;
+  std::vector<double> temp_desirejointvalue, temp_actualjointvalue;
+
 while (!trajectoryComplete)
   {
+    temp_desirejointvalue.clear();
+    temp_actualjointvalue.clear();
     if (arm_comm_.isStopped())
     {
       control_msgs::FollowJointTrajectoryResult result;
@@ -193,10 +202,13 @@ while (!trajectoryComplete)
       current_joint_pos[5] = current_joint_angles.Actuator6 * DEG_TO_RAD;
 
       totalError = 0;
+
       for (unsigned int i = 0; i < NUM_JACO_JOINTS; i++)
       {
 	error[i] = (splines.at(i))(timePoints.at(timePoints.size() - 1)) - current_joint_pos[i];
         totalError += fabs(error[i]);
+        temp_actualjointvalue.push_back(current_joint_pos[i]);
+        temp_desirejointvalue.push_back((splines.at(i))(timePoints.at(timePoints.size() - 1)));
       }
 
       if (totalError < .03)
@@ -225,7 +237,9 @@ while (!trajectoryComplete)
       current_joint_pos[5] = current_joint_angles.Actuator6 * DEG_TO_RAD;
       for (unsigned int i = 0; i < NUM_JACO_JOINTS; i++)
       {
-	error[i] = (splines.at(i))(t) - current_joint_pos[i];
+        error[i] = (splines.at(i))(t) - current_joint_pos[i];
+        temp_actualjointvalue.push_back(current_joint_pos[i]);
+        temp_desirejointvalue.push_back((splines.at(i))(t));
       }
     }
 
@@ -248,9 +262,22 @@ while (!trajectoryComplete)
       prevError[i] = error[i];
     }
 
+    actualjointvalue.push_back(temp_actualjointvalue);
+    desirejointvalue.push_back(temp_desirejointvalue);
     rate.sleep();
   }
 
+  std::ofstream outfile("/home/xianchao/error.txt",ios::out);
+  outfile.precision(3);
+  // myfile.open ("/home/xianchao/error.txt");
+  for(int index = 0; index<actualjointvalue.size(); index++){
+    for (std::vector<double>::iterator it = actualjointvalue[index].begin() ; it != actualjointvalue[index].end(); ++it)
+      outfile<<*it << ' ' ;
+    for (std::vector<double>::iterator it = desirejointvalue[index].begin() ; it != desirejointvalue[index].end(); ++it)
+      outfile<<*it << ' ' ;
+    outfile << '\n';
+  }
+  outfile.close();
   control_msgs::FollowJointTrajectoryResult result;
   result.error_code = control_msgs::FollowJointTrajectoryResult::SUCCESSFUL;
   action_server_.setSucceeded(result);
