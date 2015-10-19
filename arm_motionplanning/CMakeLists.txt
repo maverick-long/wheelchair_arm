@@ -137,6 +137,12 @@ add_executable(jaco_grab
 set_target_properties(jaco_grab PROPERTIES COMPILE_FLAGS "-std=c++0x")
 target_link_libraries(jaco_grab ${OpenRAVE_BOTH_LIBRARIES} ${Boost_LIBRARIES} arm_motionplanning)
 
+add_executable(jaco_debug
+ test/debug_traj.cpp
+)
+set_target_properties(jaco_debug PROPERTIES COMPILE_FLAGS "-std=c++0x")
+target_link_libraries(jaco_debug ${OpenRAVE_BOTH_LIBRARIES} ${Boost_LIBRARIES} arm_motionplanning)
+
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(arm_motionplanning_node arm_motionplanning_generate_messages_cpp)

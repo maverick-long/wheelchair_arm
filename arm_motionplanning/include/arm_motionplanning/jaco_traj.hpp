@@ -263,6 +263,7 @@ public:
 
 	bool LoadWaypoints(vector< vector<double> >& waypoints,string text_dir);
 	bool LoadWaypoints(trajopt::TrajArray & traj, string textdir);
+	bool DebugTraj(string textdir);
 
 	/**
 	 * @brief	Set Waypoints from file

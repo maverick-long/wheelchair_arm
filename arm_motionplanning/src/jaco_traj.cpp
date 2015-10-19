@@ -260,7 +260,9 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 	}
 
 	if(see_viewer && !smooth_traj){
-		ShowTraj(traj);
+		// ShowTraj(traj);
+		PreviewTraj(traj,activejoint);
+		cout<<"previewtraj"<<endl;
 	}
 	
 	return traj;

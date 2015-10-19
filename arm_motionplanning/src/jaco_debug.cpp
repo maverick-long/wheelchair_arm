@@ -33,13 +33,20 @@ void JACOTraj::PreviewTraj(trajopt::TrajArray traj,vector<int> activejoint){
   	vector<double> jointstate = getJointValuefromTraj(traj.row(i));
     robot->SetDOFValues(jointstate, 1, activejoint);
     handles.push_back(viewer->PlotKinBody(robot));
+    // SetColor(handles.back(),osg::Vec4f(1,0,0,1));
     if( !((i == 0) || (i == traj.rows() -1)))SetTransparency(handles.back(), .3);
   }
-  for(int i=1;i<=1000;i++){ // 30 seconds
-  	viewer->UpdateSceneData();
-  	viewer->Draw();
-  	Sleep(0.03);
-  }  	
+
+  viewer->UpdateSceneData();
+  viewer->Draw();
+  Sleep(0.03);
+  if(see_viewer && idle_viewer)viewer->Idle();
+
+  // for(int i=1;i<=1000;i++){ // 30 seconds
+  // 	viewer->UpdateSceneData();
+  // 	viewer->Draw();
+  // 	Sleep(0.03);
+  // }  	
 }
 
 void JACOTraj::PrintTraj(trajopt::TrajArray traj,vector<int> activejoint){
@@ -143,6 +150,111 @@ bool JACOTraj::LoadWaypoints(vector< vector<double> >& waypoints, string textdir
 			temp.clear();
 		}
 		in_file.close();
+		return true;
+	}else{
+		cout<<"Unable to open file"<<endl;
+	}
+	return false;
+}
+
+bool JACOTraj::DebugTraj(string textdir){
+
+	vector<int> activejoint = Getactivejoint(TrajoptMode::Default);
+	vector< vector<double> > waypoints;
+	string line;
+	std::ifstream in_file(textdir);
+	vector<double> temp;
+	trajopt::TrajArray actual_traj;
+	trajopt::TrajArray desire_traj;
+	int index =0;
+	if(in_file.is_open()){
+		cout<<"Load waypoints from "<<textdir<<endl;
+
+		while(getline(in_file,line)){
+			std::size_t found = line.find(" ");
+			while(found!=std::string::npos){
+				temp.push_back(std::stod(line.substr(index,found-index)));
+				index = found;
+				found = line.find(" ",found+1,1);
+			}
+//			printcoll(temp);
+			index = 0;
+			waypoints.push_back(temp);
+			temp.clear();
+		}
+		in_file.close();
+
+		vector<double> affinetran = TransformtoVector(robot->GetTransform());
+		vector< vector<double> > waypoints1;
+		vector< vector<double> > waypoints2;
+		vector<double> tempwaypoint;
+
+		for(int i=0;i<waypoints.size();i++){
+			tempwaypoint.clear();
+			// for(int j=0;j<waypoints[0].size()/2;j++){
+			// 	tempwaypoint.push_back(waypoints[i][j]);
+			// }
+
+			tempwaypoint.push_back(3.14 - waypoints[i][0]);
+			tempwaypoint.push_back(waypoints[i][1] - 4.71);
+			tempwaypoint.push_back(1.57 - waypoints[i][2]);
+			tempwaypoint.push_back(3.14 - waypoints[i][3]);
+			tempwaypoint.push_back(3.14 - waypoints[i][4]);
+			tempwaypoint.push_back(4.71 - waypoints[i][5]);
+			waypoints1.push_back(concatenate_vectors(GetWholeJoint(robot, tempwaypoint, activejoint),affinetran));
+			tempwaypoint.clear();
+			// for(int j=waypoints[0].size()/2;j<waypoints[0].size();j++){
+			// 	tempwaypoint.push_back(waypoints[i][j]);
+			// }
+			tempwaypoint.push_back(3.14 - waypoints[i][6]);
+			tempwaypoint.push_back(waypoints[i][7] - 4.71);
+			tempwaypoint.push_back(1.57 - waypoints[i][8]);
+			tempwaypoint.push_back(3.14 - waypoints[i][9]);
+			tempwaypoint.push_back(3.14 - waypoints[i][10]);
+			tempwaypoint.push_back(4.71 - waypoints[i][11]);
+			waypoints2.push_back(concatenate_vectors(GetWholeJoint(robot, tempwaypoint, activejoint),affinetran));
+		}
+
+		// cout<<"waypoints1 size:"<<waypoints1.size()<<", "<<waypoints1[0].size()<<endl;
+		// cout<<"waypoints2 size:"<<waypoints2.size()<<", "<<waypoints2[0].size()<<endl;
+
+		desire_traj.resize(waypoints2.size(),waypoints2[0].size());
+		for(int i = 0 ; i < waypoints2.size() ; i ++){
+			for(int m = 0 ; m < waypoints2[0].size() ; m++){
+				desire_traj(i,m) = waypoints2[i][m];
+			}
+		}
+
+		actual_traj.resize(waypoints1.size(),waypoints1[0].size());
+		for(int i = 0 ; i < waypoints1.size() ; i ++){
+			for(int m = 0 ; m < waypoints1[0].size() ; m++){
+				actual_traj(i,m) = waypoints1[i][m];
+			}
+		}
+
+		viewer = OSGViewer::GetOrCreate(env);
+		vector<GraphHandlePtr> handles;
+
+		for (int i=0; i < desire_traj.rows() ; ++i) {
+			vector<double> jointstate = getJointValuefromTraj(desire_traj.row(i));
+			robot->SetDOFValues(jointstate, 1, activejoint);
+			handles.push_back(viewer->PlotKinBody(robot));
+    		SetColor(handles.back(),osg::Vec4f(1,0,0,1));
+			if( !((i == 0) || (i == desire_traj.rows() -1)))SetTransparency(handles.back(), 1);
+		}
+		for (int i=0; i < actual_traj.rows() ; ++i) {
+			vector<double> jointstate = getJointValuefromTraj(actual_traj.row(i));
+			robot->SetDOFValues(jointstate, 1, activejoint);
+			handles.push_back(viewer->PlotKinBody(robot));
+    // SetColor(handles.back(),osg::Vec4f(1,0,0,1));
+			if( !((i == 0) || (i == actual_traj.rows() -1)))SetTransparency(handles.back(), .3);
+		}
+
+		viewer->UpdateSceneData();
+		viewer->Draw();
+		Sleep(0.03);
+		viewer->Idle();
+
 		return true;
 	}else{
 		cout<<"Unable to open file"<<endl;

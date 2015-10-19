@@ -35,6 +35,7 @@ int main(){
   affine.translation() = Eigen::Vector3d(0.2, 0.5, 0.3);//Left: 0.55, 0.0, 1.15
   affine.linear() = (Eigen::Quaterniond(0.70711,-0.70711,0.0,0.0)).toRotationMatrix();
   grab_test.ComputeTrajectory(start_default, affine);
+  
   while(1);
 
   return 0;
