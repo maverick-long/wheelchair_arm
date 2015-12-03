@@ -28,8 +28,8 @@
 //#define KP 300.0
 //#define KV 20.0
 //New values for debugging
-#define KP 50.0
-#define KV 25.0
+#define KP 20.0
+#define KV 35.0
 #define ERROR_THRESHOLD .03 //threshold in radians for combined joint error to consider motion a success
 namespace jaco
 {

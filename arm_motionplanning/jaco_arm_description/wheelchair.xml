@@ -1,0 +1,50 @@
+<!-- <robot name="wheelchair"> -->
+	<robot name="jaco" file="jaco_arm.dae">
+		<kinbody name="root">
+			<RotationAxis>0 0 1 -90</RotationAxis>
+		<body name="chair" type="dynamic">
+			<Geom type="box">
+				<Translation>-0.2 0.3 -0.2</Translation> 
+				<Extents>.25 .25 .25</Extents>
+				<diffuseColor>0.54 0.46 0.39</diffuseColor>
+			</Geom>
+
+			<Geom type="cylinder">
+				<Translation>-0.25 0 -0.35</Translation>
+				<radius>.2</radius>
+				<height>.1</height>
+				<diffuseColor>0.54 0.54 0.54</diffuseColor>
+				<!-- <ambientColor>1 0 0</ambientColor> -->
+			</Geom>
+
+			<Geom type="cylinder">
+				<Translation>-0.25 0.6 -0.35</Translation>
+				<radius>.2</radius>
+				<height>.1</height>
+				<diffuseColor>0.54 0.54 0.54</diffuseColor>
+				<!-- <ambientColor>1 0 0</ambientColor> -->
+			</Geom>
+
+			<Geom type="box">
+				<Translation>-0.3 0.3 0.3</Translation> 
+				<Extents>.1 .24 .5</Extents>
+				<diffuseColor>0.274 0.5 0.7</diffuseColor>
+			</Geom>
+		</body>
+	</kinbody>
+	</robot>
+	<!-- <KinBody file = "base.xml"/> -->
+<!-- 	<KinBody>
+		<KinBody file="base.xml"/>
+		<body name="base">
+			<offsetfrom>root</offsetfrom>
+    		<translation>0.0 0 0</translation>
+    		<rotationaxis>0 1 0 0</rotationaxis>
+		</body>
+		<joint type="hinge" enable="false">
+			<body>root</body>
+			<body>base</body>
+			<limits>0 0</limits>
+		</joint>
+	</KinBody> -->
+<!-- </robot>  -->

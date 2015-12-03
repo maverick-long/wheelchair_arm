@@ -14,7 +14,7 @@ using namespace jaco_traj;
 
 void JACOTraj::SetTorqueCost(vector<double>& tau_cost,TrajoptMode mode){
 	tau_cost.assign(robot->GetActiveDOF(),0.0);
-	//set the velocity cost with the order:
+	//set the Torque cost with the order:
 	//		jaco_joint_1   jaco_joint_2   jaco_joint_3
 	//		jaco_joint_4   jaco_joint_5   jaco_joint_6
 
@@ -42,13 +42,13 @@ void JACOTraj::SetVelCost(vector<double>& vel_cost,TrajoptMode mode){
 	//		jaco_joint_1   jaco_joint_2   jaco_joint_3
 	//		jaco_joint_4   jaco_joint_5   jaco_joint_6
 
-	vel_cost.assign(robot->GetActiveDOF(),300.0);
+	vel_cost.assign(robot->GetActiveDOF(),10.0);
 	vector<double> majorjoints_cost;
 
 	switch(mode){
 	default:
 		majorjoints_cost = {
-			10,	10,	10,	10,	10,	10
+			10,	10,	10,	10,	10,	0.1
 		};
 
 	}
@@ -65,7 +65,7 @@ void JACOTraj::BuildJointCost(vector<double>& vel_cost, vector<double>& majorjoi
 void JACOTraj::SetPosCost(vector<double>& pos_cost,vector<double>& pos_vals,TrajoptMode mode){
 	pos_cost.assign(robot->GetActiveDOF(),0.0);
 	pos_vals.assign(robot->GetActiveDOF(),0.0);
-	//set the velocity cost with the order:
+	//set the joint pose cost with the order:
 	//		jaco_joint_1   jaco_joint_2   jaco_joint_3
 	//		jaco_joint_4   jaco_joint_5   jaco_joint_6
 	vector<double> majorjoints_cost;
@@ -118,13 +118,14 @@ void JACOTraj::AddContinueCollisionCost(stringstream& request, double coeffs, do
 ";
 }
 
-void JACOTraj::AddJointPositionCostorConstraint(stringstream& request, vector<double> pos_cost , vector<double> pos_vals){
+void JACOTraj::AddJointPositionCostorConstraint(stringstream& request, vector<double> pos_cost , vector<double> pos_vals, int time_step){
 	request << "},\
 			{\
 			  \"type\" : \"joint_pos\",\
 			  \"params\" : {\
 			    \"coeffs\" : "<< convertDoubleVectortoString(pos_cost)<<",\
-			    \"vals\" : "<< convertDoubleVectortoString(pos_vals)<<"\
+			    \"vals\" : "<< convertDoubleVectortoString(pos_vals)<<",\
+			    \"timestep\" : "<< time_step <<"\
 			  }\
 ";
 }

@@ -32,6 +32,9 @@ void JACOTraj::PreviewTraj(trajopt::TrajArray traj,vector<int> activejoint){
   for (int i=0; i < traj.rows() ; ++i) {
   	vector<double> jointstate = getJointValuefromTraj(traj.row(i));
     robot->SetDOFValues(jointstate, 1, activejoint);
+    if(current_mode==TrajoptMode::WheelChairDefault){
+    	robot->SetTransform(getTransformfromTraj(traj.row(i)));
+    }
     handles.push_back(viewer->PlotKinBody(robot));
     // SetColor(handles.back(),osg::Vec4f(1,0,0,1));
     if( !((i == 0) || (i == traj.rows() -1)))SetTransparency(handles.back(), .3);

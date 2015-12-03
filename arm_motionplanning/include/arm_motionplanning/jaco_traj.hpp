@@ -438,7 +438,7 @@ private:
 
 	void AddJointPrime(stringstream& request, vector<double> pos_vals, vector<double> coeffs, int time_step);
 
-	void AddJointPositionCostorConstraint(stringstream& request, vector<double> pos_cost , vector<double> pos_vals);
+	void AddJointPositionCostorConstraint(stringstream& request, vector<double> pos_cost , vector<double> pos_vals, int time_step);
 
 	void ClearViewer();
 

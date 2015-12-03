@@ -177,6 +177,42 @@ int main(int argc, char **argv)
       std::cin.get();
       break;
 
+      case 5:
+      sendparameters(problemparameters_pub, 5, false, false, false, 60);
+      ros::Duration(0.5).sleep(); 
+      sendcommand(command_pub,{-0.175,-0.48,0.16,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0,0});
+      std::cin.get();
+      break;
+
+      case 6:
+      sendparameters(problemparameters_pub, 7);
+      ros::Duration(0.5).sleep(); 
+      sendcommand(command_pub,{-0.158,-0.505,0.33,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0,0});//sendcommand(command_pub,{-0.18,-0.48,0.14,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0.14,0})
+      std::cin.get();
+      break;
+
+      case 7:
+      sendparameters(problemparameters_pub, 0);
+      ros::Duration(0.5).sleep(); 
+      //sendcommand(command_pub,{0.1,-0.504725,0.2,0.5,0.5,-0.5,-0.5},{1,1,1},{1,1,1},{0,0.1,0});
+      sendcommand(command_pub,{-0.018,-0.58,0.14,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0,0});
+      std::cin.get();
+      break;
+
+      case 8:
+      sendparameters(problemparameters_pub, 6);
+      ros::Duration(0.5).sleep(); 
+      sendcommand(command_pub,{-0.02,-0.4,0.18,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0,0});
+      std::cin.get();
+      break;
+
+      case 9:
+      sendparameters(problemparameters_pub, 0);
+      ros::Duration(0.5).sleep(); 
+      sendcommand(command_pub,{-0.167,-0.51,0.26,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0,0});//sendcommand(command_pub,{-0.18,-0.48,0.14,0.76604,-0.64279,0,0},{1,1,1},{1,1,1},{0,0.14,0})
+      std::cin.get();
+      break;
+
       default:
       std::cout<< "invalid choice"<<std::endl;
     }

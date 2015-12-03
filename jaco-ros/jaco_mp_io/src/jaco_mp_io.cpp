@@ -1,4 +1,5 @@
 #include <jaco_mp_io/jaco_mp_io.h>
+#include <cmath> 
 
 using namespace std;
 
@@ -59,7 +60,7 @@ void JACOMotionPlannerIO::ComputeTrajectory(Eigen::Affine3d hand_target, bool lo
 	jacoTrajectory->LoadGains(pos_gains,rot_gains,hand_offset);
 	jacoTrajectory->SeeViewer(true);
 	jacoTrajectory->IdleViewer(true);
-	jacoTrajectory->SetNumStep(30);
+	// jacoTrajectory->SetNumStep(30);
 
 	/**load point cloud**/
 	if(load_pc)
@@ -147,7 +148,16 @@ control_msgs::FollowJointTrajectoryGoal JACOMotionPlannerIO::GenerateTrajMsg(vec
 	for(int i=0; i<final_traj.size(); i++){
 		goal.trajectory.points[i].positions.resize(final_traj[i].size());
 		for(int j=0; j<final_traj[i].size();j++){
-			goal.trajectory.points[i].positions[j] = final_traj[i][j];	
+			goal.trajectory.points[i].positions[j] = final_traj[i][j];
+			if(i>0 && abs(final_traj[i][j]-final_traj[i-1][j])>3.14){
+				if(final_traj[i][j]<final_traj[i-1][j]){
+					goal.trajectory.points[i].positions[j] += 6.28;
+					final_traj[i][j] += 6.28;
+				}else if(final_traj[i][j]>final_traj[i-1][j]){
+					goal.trajectory.points[i].positions[j] -= 6.28;
+					final_traj[i][j] -= 6.28;
+				}
+			}
 		}
 	}
 	return goal;

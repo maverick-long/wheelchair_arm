@@ -32,6 +32,12 @@ std::vector<double> getJointValuefromTraj(trajopt::TrajArray row){
 	return jointvalue;
 }
 
+Transform getTransformfromTraj(trajopt::TrajArray row){
+	std::cout<< row(row.size()-7)<<" "<<row(row.size()-6)<<" "<<row(row.size()-5)<<" "<<row(row.size()-4)<<" "<<row(row.size()-3)<<" "<<row(row.size()-2)<<" "<< row(row.size()-1)<<std::endl;
+	Transform obj_transform = Transform(Vector(row(row.size()-4),row(row.size()-3),row(row.size()-2),row(row.size()-1)),Vector(row(row.size()-7),row(row.size()-6),row(row.size()-5)));
+	return obj_transform;
+}
+
 std::vector<double> GetMainJoint(std::vector<double> traj,std::vector<int> activejoint){
 	std::vector<double> jointstates;
 	for(int i=0;i<activejoint.size();i++)

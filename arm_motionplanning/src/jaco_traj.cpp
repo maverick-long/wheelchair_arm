@@ -58,7 +58,8 @@ void JACOTraj::Defaults()
 
 void JACOTraj::LoadRobot()
 {
-	env->Load("jaco_arm_description/jaco_arm.dae");
+	// env->Load("jaco_arm_description/jaco_arm.dae");
+	env->Load("jaco_arm_description/wheelchair.xml");
 	robot = env->GetRobot(robot_name);
 	assert(robot);
 
@@ -79,7 +80,7 @@ void JACOTraj::LoadGains(Eigen::Vector3d pos_gains, Eigen::Vector3d rot_gains, E
 vector<int> JACOTraj::Getactivejoint(TrajoptMode mode){
 	vector<int> activejoint = {robot->GetJoint("jaco_joint_1")->GetDOFIndex(),robot->GetJoint("jaco_joint_2")->GetDOFIndex(),
 							   robot->GetJoint("jaco_joint_3")->GetDOFIndex(),robot->GetJoint("jaco_joint_4")->GetDOFIndex(),
-							   robot->GetJoint("jaco_joint_5")->GetDOFIndex(),robot->GetJoint("jaco_joint_6")->GetDOFIndex()};
+							   robot->GetJoint("jaco_joint_5")->GetDOFIndex(),robot->GetJoint("jaco_joint_6")->GetDOFIndex()};	
 	return activejoint;
 }
 
@@ -224,7 +225,7 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 
 	if(see_viewer && idle_viewer)viewer->Idle();
 
-	PrintTraj(traj,activejoint);
+	// PrintTraj(traj,activejoint);
 
 	//SaveTraj(traj,activejoint,"trajectory.txt");
 
@@ -260,6 +261,7 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 	}
 
 	if(see_viewer && !smooth_traj){
+		cout<<"size of traj:"<<traj.row(1)<<endl;
 		// ShowTraj(traj);
 		PreviewTraj(traj,activejoint);
 		cout<<"previewtraj"<<endl;
@@ -394,7 +396,7 @@ void JACOTraj::UpdateStateForRequest(vector<double>& start_state, Eigen::Affine3
 
 void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Affine3d hand)
 {
-	Vector temp = robot->GetLink(hand_str)->GetTransform()*Vector(hand_offset[0], hand_offset[1], hand_offset[2]-0.1);
+	Vector temp = robot->GetLink(hand_str)->GetTransform()*Vector(hand_offset[0], hand_offset[1], hand_offset[2]);//hand_offset[0], hand_offset[1], hand_offset[2]-0.1
 
 	vector<double> hand_pose = TransformtoVector(robot->GetLink("jaco_link_hand")->GetTransform());
 
@@ -404,16 +406,24 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 
 	vector<double> jointprime;
 	vector<double> jointcoeff;
+	
+	int index;
+	double radius = 0.1;
 
 	Vector unitstep((xyz_target[0] - temp.x)/(num_step-1),(xyz_target[1] - temp.y)/(num_step-1),(xyz_target[2] - temp.z)/(num_step-1));
 
 
 	OpenRAVE::Transform pose = robot->GetLink(hand_str)->GetTransform();
+	OpenRAVE::Transform valvetransform(Vector(quat_target[0],quat_target[1],quat_target[2],quat_target[3]),Vector(xyz_target[0],xyz_target[1],xyz_target[2]));
+	Eigen::Quaterniond tempquat(quat_target[0],quat_target[1],quat_target[2],quat_target[3]);
 
 	vector<double> current_xyz_target = {temp.x,temp.y,temp.z};
 	// eg geometry.x = openrave.w, geometry.y = openrave.x, geometry.z = openrave.y, geometry.w = openrave.z
 	//	quat_target = {hand_q.w(), hand_q.x(), hand_q.y(), hand_q.z()};
 	vector<double> current_quat_target = {pose.rot.x,pose.rot.y,pose.rot.z,pose.rot.w};
+	cout<< "joint value:"<<robot->GetJoint("jaco_joint_6")->GetValue(0)<<endl;
+	cout << "pos: "<< pose.trans.x << ","<< pose.trans.y << ","<< pose.trans.z <<endl;
+	cout << "quat: "<< pose.rot.x << ","<< pose.rot.y << ","<< pose.rot.z << ","<< pose.rot.w <<endl;
 
 	switch(mode)
 	{
@@ -474,6 +484,71 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddConstraintEnd(request,request_traj);
 			break;
 
+		case TrajoptMode::TurningValve:
+			AddRequestHead(request);
+			AddCostHead(request,vel_cost);
+			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			// for(index = 1; index< num_step-1; index++){
+			// 	AddJointPositionCostorConstraint(request, {0,0,0,0,0,robot->GetJoint("jaco_joint_6")->GetValue(0)+0.25,0,0,0,0,0,0,0,0,0,0} , {0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0}, index);
+			// }
+			AddCostEnd(request);
+			AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,{0,0,0},{0,0,0},5,5,{0,0,0});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
+			for(index = 1; index<num_step; index++){
+				temp = valvetransform*Vector(hand_offset[0] + radius*sin(6.3/num_step*index), hand_offset[2] - radius*cos(6.3/num_step*index),0);
+				tempquat *= Eigen::Quaterniond(0.99862,0,0,0.05248);//0.9983,0,0,-0.0583//0.9932,0,0,-0.11641
+				xyz_target[0] = temp.x;
+				xyz_target[1] = temp.y;
+				xyz_target[2] = temp.z;
+				current_quat_target[0] = tempquat.w();
+				current_quat_target[1] = tempquat.x();
+				current_quat_target[2] = tempquat.y();
+				current_quat_target[3] = tempquat.z();
+				AddPoseCostorConstraint(request,hand_str,xyz_target,current_quat_target,{1,1,1},{1,1,1},index,index,hand_offset);
+			}
+			AddJointPrime(request, mode, num_step-1, num_step-1);
+			AddConstraintEnd(request,request_traj);
+			break;
+
+		case TrajoptMode::RemoveTool:
+			AddRequestHead(request);
+			AddCostHead(request,vel_cost);
+			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddCostEnd(request);
+			// AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,2,2,{hand_offset[0],hand_offset[1]+0.01,hand_offset[2]});
+			AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,3,3,{hand_offset[0],hand_offset[1]+0.06,hand_offset[2]});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
+			AddConstraintEnd(request,request_traj);
+			break;
+
+		case TrajoptMode::MovetoValve:
+			AddRequestHead(request);
+			AddCostHead(request,vel_cost);
+			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddCostEnd(request);
+			// AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,2,2,{hand_offset[0],hand_offset[1]+0.01,hand_offset[2]});
+			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-15,num_step-15,{hand_offset[0],hand_offset[1]+0.3,hand_offset[2]});
+			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,{1,0,1},rot_gains,num_step-14,num_step-6,{hand_offset[0]+0.015,hand_offset[1]+0.3,hand_offset[2]-0.03});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
+			AddConstraintEnd(request,request_traj);
+			break;
+
+		case TrajoptMode::WheelChairDefault:
+			AddRequestHead(request);
+			AddCostHead(request,vel_cost);
+			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddCostEnd(request);
+			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{0,0,1},{1,1,1},1,num_step-1,{0,0,0});
+			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
+			AddConstraintEnd(request,request_traj);
+			break;
 
 		default:
 			AddRequestHead(request);
@@ -519,8 +594,8 @@ vector< Eigen::MatrixXf > JACOTraj::GenerateInitGuess(bool multi_initguess,vecto
 		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
 		initguess.push_back(Buildtraj(waypoints));
 	}else{
-		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, pose2, activejoint),affinetran));
-		// waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
+		// waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, pose2, activejoint),affinetran));
+		waypoints.push_back(concatenate_vectors(GetWholeJoint(robot, target_state, activejoint),affinetran));
 		initguess.push_back(Buildtraj(waypoints));
 	}
 	return initguess;
@@ -650,7 +725,7 @@ void JACOTraj::Load(std::string& object_name)
 void JACOTraj::ReleaseObject(std::string& object_name)
 {
 	KinBodyPtr obj = env->GetKinBody(object_name);
-	robot = env->GetRobot("atlas");
+	robot = env->GetRobot("jaco");
 	robot->Release(obj);
 }
 

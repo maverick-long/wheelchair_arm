@@ -50,6 +50,8 @@ void printcoll (T const& coll)
 
 std::vector<double> getJointValuefromTraj(trajopt::TrajArray row);
 
+Transform getTransformfromTraj(trajopt::TrajArray row);
+
 std::vector<double> GetMainJoint(std::vector<double> traj,std::vector<int> activejoint);
 
 std::vector<double> GetWholeJoint(RobotBasePtr robot, const std::vector<double>& jointvalue, const std::vector<int>& jointindex);

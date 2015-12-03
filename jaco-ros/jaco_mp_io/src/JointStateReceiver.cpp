@@ -24,7 +24,7 @@ boost::shared_ptr<std::vector<double>> JointStateReceiver::updateJoints(){
 }
 
 void JointStateReceiver::jointMessageCallback(sensor_msgs::JointStatePtr data){
-	for(int i = 0; i <5 ; i++)
+	for(int i = 0; i <6 ; i++)
 	{
 		latestJoints->position[i] = data->position[i];
 	}
