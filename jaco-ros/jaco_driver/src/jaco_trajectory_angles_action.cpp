@@ -32,7 +32,8 @@ JacoTrajectoryAnglesActionServer::JacoTrajectoryAnglesActionServer(JacoComm &arm
     node_handle_.param<double>("rate_hz", rate_hz_, 600.0);
     node_handle_.param<double>("tolerance", tolerance, 2.0);
     tolerance_ = (float)tolerance;
-    j6o_ = arm_comm.robotType() == 2 ? 270.0 : 260.0;
+    // j6o_ = arm_comm.robotType() == 2 ? 270.0 : 260.0;
+    j6o_ = 270.0;
     max_curvature_= 20.0;
     action_server_.start();
 }
@@ -59,9 +60,9 @@ void JacoTrajectoryAnglesActionServer::actionCallback(const control_msgs::Follow
     double delta_for_trajectory[NUM_JACO_JOINTS];
 
 
-	if (arm_comm_.isStopped())
+  if (arm_comm_.isStopped())
         {
-	    control_msgs::FollowJointTrajectoryResult result;
+      control_msgs::FollowJointTrajectoryResult result;
             ROS_INFO("Could not complete joint angle action because the arm is 'stopped'.");
             result.error_code = control_msgs::FollowJointTrajectoryResult::PATH_TOLERANCE_VIOLATED;
             action_server_.setSucceeded(result);
@@ -130,6 +131,17 @@ void JacoTrajectoryAnglesActionServer::actionCallback(const control_msgs::Follow
     timePoints[i] = timePoints[i - 1] + maxTime * TIME_SCALING_FACTOR;
   }
 
+  float basic_vel[NUM_JACO_JOINTS][numPoints];
+  for(unsigned int j=0;j<numPoints;j++){
+    for(unsigned int i=0;i<NUM_JACO_JOINTS;i++){
+      if(j==numPoints-1)
+        basic_vel[i][j]=0.0;
+      else  
+      basic_vel[i][j]=(trajectoryPoints[i][j+1]-trajectoryPoints[i][j])/(timePoints[j+1]-timePoints[j]);
+    }
+    // ROS_INFO("basic velocity:%f,%f,%f,%f,%f,%f",basic_vel[0][j],basic_vel[1][j],basic_vel[2][j],basic_vel[3][j],basic_vel[4][j],basic_vel[5][j]);
+  }
+
   vector<ecl::SmoothLinearSpline> splines;
   splines.resize(6);
   for (unsigned int i = 0; i < NUM_JACO_JOINTS; i++)
@@ -146,6 +158,8 @@ void JacoTrajectoryAnglesActionServer::actionCallback(const control_msgs::Follow
   float totalError;
   float prevError[NUM_JACO_JOINTS] = {0};
   float currentPoint;
+  int vel_index=0;
+  int time_index=1;
   AngularPosition position_data;
   AngularInfo trajPoint;
   trajPoint.InitStruct();
@@ -205,7 +219,7 @@ while (!trajectoryComplete)
 
       for (unsigned int i = 0; i < NUM_JACO_JOINTS; i++)
       {
-	error[i] = (splines.at(i))(timePoints.at(timePoints.size() - 1)) - current_joint_pos[i];
+  error[i] = (splines.at(i))(timePoints.at(timePoints.size() - 1)) - current_joint_pos[i];
         totalError += fabs(error[i]);
         temp_actualjointvalue.push_back(current_joint_pos[i]);
         temp_desirejointvalue.push_back((splines.at(i))(timePoints.at(timePoints.size() - 1)));
@@ -219,7 +233,7 @@ while (!trajectoryComplete)
         trajPoint.Actuator4 = 0.0;
         trajPoint.Actuator5 = 0.0;
         trajPoint.Actuator6 = 0.0;
-	arm_comm_.setJointVelocities(trajPoint);
+  arm_comm_.setJointVelocities(trajPoint);
         trajectoryComplete = true;
         ROS_INFO("Trajectory complete!");
         break;
@@ -243,17 +257,24 @@ while (!trajectoryComplete)
       }
     }
 
+    if(t>timePoints[time_index] && time_index<numPoints){
+      vel_index=time_index;
+      time_index++;
+    }
+    // ROS_INFO("basic velocity:%f,%f,%f,%f,%f,%f",basic_vel[0][vel_index],basic_vel[1][vel_index],basic_vel[2][vel_index],basic_vel[3][vel_index],basic_vel[4][vel_index],basic_vel[5][vel_index]);
+
     //calculate control input
     //populate the velocity command
-    trajPoint.Actuator1 = (KP * error[0] + KV * (error[0] - prevError[0]) * RAD_TO_DEG);
-    trajPoint.Actuator2 = (KP * error[1] + KV * (error[1] - prevError[1]) * RAD_TO_DEG);
-    trajPoint.Actuator3 = (KP * error[2] + KV * (error[2] - prevError[2]) * RAD_TO_DEG);
-    trajPoint.Actuator4 = (KP * error[3] + KV * (error[3] - prevError[3]) * RAD_TO_DEG);
-    trajPoint.Actuator5 = (KP * error[4] + KV * (error[4] - prevError[4]) * RAD_TO_DEG);
-    trajPoint.Actuator6 = (KP * error[5] + KV * (error[5] - prevError[5]) * RAD_TO_DEG);
+    trajPoint.Actuator1 = (Kvel*basic_vel[0][vel_index] + KP * error[0] + KV * (error[0] - prevError[0]) * RAD_TO_DEG);
+    trajPoint.Actuator2 = (Kvel*basic_vel[1][vel_index] + KP * error[1] + KV * (error[1] - prevError[1]) * RAD_TO_DEG);
+    trajPoint.Actuator3 = (Kvel*basic_vel[2][vel_index] + KP * error[2] + KV * (error[2] - prevError[2]) * RAD_TO_DEG);
+    trajPoint.Actuator4 = (Kvel*basic_vel[3][vel_index] + KP * error[3] + KV * (error[3] - prevError[3]) * RAD_TO_DEG);
+    trajPoint.Actuator5 = (Kvel*basic_vel[4][vel_index] + KP * error[4] + KV * (error[4] - prevError[4]) * RAD_TO_DEG);
+    trajPoint.Actuator6 = (Kvel*basic_vel[5][vel_index] + KP * error[5] + KV * (error[5] - prevError[5]) * RAD_TO_DEG);
 
     //for debugging:
      ROS_INFO("Errors: %f,%f,%f,%f,%f,%f", error[0], error[1], error[2], error[3], error[4], error[5]);
+
 
     //send the velocity command
     arm_comm_.setJointVelocities(trajPoint);//AngularInfo &joint_vel
