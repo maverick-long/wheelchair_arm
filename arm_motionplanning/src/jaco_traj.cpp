@@ -239,7 +239,7 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 		else{
 			final_traj.resize(traj.rows());
 			for(int i=0;i<traj.rows();i++){
-				vector<double> data = GetMainJoint(getJointValuefromTraj(traj.row(i)),Getactivejoint(current_mode));				
+				vector<double> data = GetMainJoint(getJointValuefromTraj(traj.row(i)),Getactivejoint(current_mode));			
 				final_traj[i].resize(6);
 				for(int j=0;j<6;j++){
 					final_traj[i][j] = data[j];
@@ -261,9 +261,8 @@ trajopt::TrajArray JACOTraj::ComputeTrajectory(vector<double> start_state, Eigen
 	}
 
 	if(see_viewer && !smooth_traj){
-		cout<<"size of traj:"<<traj.row(1)<<endl;
-		// ShowTraj(traj);
-		PreviewTraj(traj,activejoint);
+		ShowTraj(traj);
+		// PreviewTraj(traj,activejoint);
 		cout<<"previewtraj"<<endl;
 	}
 	
@@ -545,7 +544,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
-			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{0,0,1},{1,1,1},1,num_step-1,{0,0,0});
+			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,0,1},{1,1,0},1,num_step-1,{0,0,0});
 			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
 			AddConstraintEnd(request,request_traj);
 			break;

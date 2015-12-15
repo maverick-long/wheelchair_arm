@@ -34,7 +34,7 @@ std::vector<double> getJointValuefromTraj(trajopt::TrajArray row){
 
 Transform getTransformfromTraj(trajopt::TrajArray row){
 	std::cout<< row(row.size()-7)<<" "<<row(row.size()-6)<<" "<<row(row.size()-5)<<" "<<row(row.size()-4)<<" "<<row(row.size()-3)<<" "<<row(row.size()-2)<<" "<< row(row.size()-1)<<std::endl;
-	Transform obj_transform = Transform(Vector(row(row.size()-4),row(row.size()-3),row(row.size()-2),row(row.size()-1)),Vector(row(row.size()-7),row(row.size()-6),row(row.size()-5)));
+	Transform obj_transform = Transform(Vector(row(row.size()-3),row(row.size()-2),row(row.size()-1),row(row.size()-4)),Vector(row(row.size()-7),row(row.size()-6),row(row.size()-5)));
 	return obj_transform;
 }
 
