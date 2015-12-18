@@ -420,9 +420,6 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 	// eg geometry.x = openrave.w, geometry.y = openrave.x, geometry.z = openrave.y, geometry.w = openrave.z
 	//	quat_target = {hand_q.w(), hand_q.x(), hand_q.y(), hand_q.z()};
 	vector<double> current_quat_target = {pose.rot.x,pose.rot.y,pose.rot.z,pose.rot.w};
-	cout<< "joint value:"<<robot->GetJoint("jaco_joint_6")->GetValue(0)<<endl;
-	cout << "pos: "<< pose.trans.x << ","<< pose.trans.y << ","<< pose.trans.z <<endl;
-	cout << "quat: "<< pose.rot.x << ","<< pose.rot.y << ","<< pose.rot.z << ","<< pose.rot.w <<endl;
 
 	switch(mode)
 	{
@@ -538,14 +535,20 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			break;
 
 		case TrajoptMode::WheelChairDefault:
+			GetLinkPosandQuat("chair", root_xyz, root_quat);
+			std::cout<<"chair base xyz:";
+			printcoll(root_xyz);
+			std::cout<<"chair base quat:";
+			printcoll(root_quat);
 			AddRequestHead(request);
 			AddCostHead(request,vel_cost);
 			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
-			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,0,1},{1,1,0},1,num_step-1,{0,0,0});
-			AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
+			// AddPoseCostorConstraint(request,"chair",root_xyz,root_quat,{0,1,1},{1,1,0},1,num_step-1,{0,0,0});
+			AddDDPoseCostorConstraint(request, "chair",{0,1,1},{1,1,0},1,num_step-1,{0,0,0});
+			// AddPoseCostorConstraint(request,"chair",root_xyz,root_quat,{0,0,1},{1,1,1},num_step-1,num_step-1,{0,0,0});
 			AddConstraintEnd(request,request_traj);
 			break;
 
@@ -719,6 +722,10 @@ void JACOTraj::Load(std::string& object_name)
 	ss << "/data/" << object_name << ".xml";
 
 	env->Load(ss.str());
+}
+
+KinBodyPtr JACOTraj::GetKinBody(const std::string& kinbody_name){
+	return env->GetKinBody(kinbody_name);
 }
 
 void JACOTraj::ReleaseObject(std::string& object_name)

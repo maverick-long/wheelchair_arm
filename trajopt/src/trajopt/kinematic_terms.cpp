@@ -68,6 +68,20 @@ VectorXd CartPoseErrCalculator::operator()(const VectorXd& dof_vals) const {
   return err;  
 }
 
+VectorXd CartDDPoseErrCalculator::operator()(const VectorXd& dof_vals) const {
+  int n_dof = manip_->GetDOF();
+  manip_->SetDOFValues(toDblVec(dof_vals.topRows(n_dof)));
+  OR::Transform pose = link_->GetTransform();
+  OR::Transform pose_inv_ = pose.inverse();
+  manip_->SetDOFValues(toDblVec(dof_vals.bottomRows(n_dof)));
+  OR::Transform newpose = link_->GetTransform();
+  newpose.trans = link_->GetTransform()*OR::Vector(offset_[0],offset_[1],offset_[2],0);
+
+  OR::Transform pose_err = pose_inv_ * newpose;
+  VectorXd err = concat(rotVec(pose_err.rot), toVector3d(pose_err.trans));
+  return err;  
+}
+
 #if 0
 CartPoseCost::CartPoseCost(const VarVector& vars, const OR::Transform& pose, RobotAndDOFPtr manip, KinBody::LinkPtr link, const VectorXd& coeffs) :
     CostFromErrFunc(VectorOfVectorPtr(new CartPoseErrCalculator(pose, manip, link)), vars, coeffs, ABS, "CartPose")

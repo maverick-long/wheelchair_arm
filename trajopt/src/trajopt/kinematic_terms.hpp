@@ -51,6 +51,17 @@ struct CartPoseErrorPlotter : public Plotter {
   void Plot(const DblVec& x, OR::EnvironmentBase& env, std::vector<OR::GraphHandlePtr>& handles);
 };
 
+struct CartDDPoseErrCalculator : public VectorOfVector {
+  ConfigurationPtr manip_;
+  OR::KinBody::LinkPtr link_;
+  Vector3d offset_;
+  CartDDPoseErrCalculator(ConfigurationPtr manip, OR::KinBody::LinkPtr link,Eigen::Vector3d offset) :
+  manip_(manip),
+  link_(link),
+  offset_(offset){}
+  VectorXd operator()(const VectorXd& dof_vals) const;
+};
+
 struct CartPoseConstraintCalculator : public VectorOfVector {
 	OR::Vector plane1_;
 	OR::Vector plane2_;
@@ -66,7 +77,6 @@ struct CartPoseConstraintCalculator : public VectorOfVector {
 	VectorXd operator()(const VectorXd& dof_vals) const;
 
 };
-
 
 struct CartVelJacCalculator : MatrixOfVector {
   ConfigurationPtr manip_;

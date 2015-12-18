@@ -42,7 +42,7 @@ void JACOTraj::SetVelCost(vector<double>& vel_cost,TrajoptMode mode){
 	//		jaco_joint_1   jaco_joint_2   jaco_joint_3
 	//		jaco_joint_4   jaco_joint_5   jaco_joint_6
 
-	vel_cost.assign(robot->GetActiveDOF(),10.0);
+	vel_cost.assign(robot->GetActiveDOF(),100.0);
 	vector<double> majorjoints_cost;
 
 	switch(mode){
@@ -174,6 +174,21 @@ void JACOTraj::AddPoseCostorConstraint(stringstream& request, string linkname,ve
 	              }\
 	";
 	}
+}
+
+void JACOTraj::AddDDPoseCostorConstraint(stringstream& request, string linkname,vector<double> pos_coeffs, vector<double> rot_coeffs, int first_step, int last_step, vector<double> offset){
+	request << "},\
+	{\
+		\"type\" : \"differential_pose\",\
+		\"name\" : \""<<linkname<<"_pose\",\
+		\"params\" : {\"link\": \""<< linkname << "\" ,\
+		\"offset\": "<< convertDoubleVectortoString(offset) <<",\
+		\"pos_coeffs\": "<< convertDoubleVectortoString(pos_coeffs) <<",\
+		\"rot_coeffs\": "<< convertDoubleVectortoString(rot_coeffs) <<",\
+		\"first_step\" : "<<first_step<<",\
+		\"last_step\" : "<<last_step<<"\
+	}\
+";
 }
 
 void JACOTraj::AddPositionRegionConstraint(stringstream& request, string linkname,vector<double> plane1, vector<double> plane2, double dist_coeff, int time_step){

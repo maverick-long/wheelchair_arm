@@ -205,7 +205,7 @@ void AddLights(osg::Group* group) {
   {
     osg::Light* light = new osg::Light;
     light->setLightNum(0);
-    light->setPosition(osg::Vec4(-4,0,4,1));
+    light->setPosition(osg::Vec4(-4,-4,4,1));
     osg::LightSource* lightSource = new osg::LightSource;
     lightSource->setLight(light);
     light->setDiffuse(osg::Vec4(1,.9,.9,1)*.5);
@@ -219,7 +219,7 @@ void AddLights(osg::Group* group) {
   {
     osg::Light* light = new osg::Light;
     light->setLightNum(1);
-    light->setPosition(osg::Vec4(4,0,4,1));
+    light->setPosition(osg::Vec4(4,4,4,1));
     osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
     lightSource->setLight(light);
     light->setDiffuse(osg::Vec4(.9,.9,1,1)*.5);
@@ -227,6 +227,32 @@ void AddLights(osg::Group* group) {
     light->setLinearAttenuation(.15);
     group->addChild(lightSource.get());
     group->getOrCreateStateSet()->setMode(GL_LIGHT1, osg::StateAttribute::ON);
+  }
+
+  {
+    osg::Light* light = new osg::Light;
+    light->setLightNum(3);
+    light->setPosition(osg::Vec4(-4,4,4,1));
+    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+    lightSource->setLight(light);
+    light->setDiffuse(osg::Vec4(.9,.9,1,1)*.5);
+    light->setConstantAttenuation(0);
+    light->setLinearAttenuation(.15);
+    group->addChild(lightSource.get());
+    group->getOrCreateStateSet()->setMode(GL_LIGHT2, osg::StateAttribute::ON);
+  }
+
+  {
+    osg::Light* light = new osg::Light;
+    light->setLightNum(4);
+    light->setPosition(osg::Vec4(4,-4,4,1));
+    osg::ref_ptr<osg::LightSource> lightSource = new osg::LightSource;
+    lightSource->setLight(light);
+    light->setDiffuse(osg::Vec4(.9,.9,1,1)*.5);
+    light->setConstantAttenuation(0);
+    light->setLinearAttenuation(.15);
+    group->addChild(lightSource.get());
+    group->getOrCreateStateSet()->setMode(GL_LIGHT3, osg::StateAttribute::ON);
   }
 
 }

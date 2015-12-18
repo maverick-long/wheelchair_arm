@@ -3,14 +3,15 @@
 		<kinbody name="root">
 			<RotationAxis>0 0 1 -90</RotationAxis>
 		<body name="chair" type="dynamic">
+			<translation>-0.2 0.3 -0.2</translation>
 			<Geom type="box">
-				<Translation>-0.2 0.3 -0.2</Translation> 
+				<Translation>0 0 0</Translation> 
 				<Extents>.25 .25 .25</Extents>
 				<diffuseColor>0.54 0.46 0.39</diffuseColor>
 			</Geom>
 
 			<Geom type="cylinder">
-				<Translation>-0.25 0 -0.35</Translation>
+				<Translation>-0.05 -0.3 -0.15</Translation>
 				<radius>.2</radius>
 				<height>.1</height>
 				<diffuseColor>0.54 0.54 0.54</diffuseColor>
@@ -18,7 +19,7 @@
 			</Geom>
 
 			<Geom type="cylinder">
-				<Translation>-0.25 0.6 -0.35</Translation>
+				<Translation>-0.05 0.3 -0.15</Translation>
 				<radius>.2</radius>
 				<height>.1</height>
 				<diffuseColor>0.54 0.54 0.54</diffuseColor>
@@ -26,7 +27,7 @@
 			</Geom>
 
 			<Geom type="box">
-				<Translation>-0.3 0.3 0.3</Translation> 
+				<Translation>-0.1 0.0 0.5</Translation> 
 				<Extents>.1 .24 .5</Extents>
 				<diffuseColor>0.274 0.5 0.7</diffuseColor>
 			</Geom>

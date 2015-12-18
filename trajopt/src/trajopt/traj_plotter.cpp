@@ -74,7 +74,7 @@ void TrajPlotter::OptimizerCallback(OptProb*, DblVec& x) {
 
   viewer->UpdateSceneData();
   viewer->Draw();
-  // viewer->Idle();
+  viewer->Idle();
 }
 
 }

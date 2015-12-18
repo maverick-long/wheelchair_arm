@@ -324,6 +324,8 @@ public:
 	 */
 	void GetFinalTraj(vector< vector<double> >& final_traj);
 
+	KinBodyPtr GetKinBody(const std::string& kinbody_name);
+
 
 
 private:
@@ -439,6 +441,8 @@ private:
 	void AddJointPrime(stringstream& request, vector<double> pos_vals, vector<double> coeffs, int time_step);
 
 	void AddJointPositionCostorConstraint(stringstream& request, vector<double> pos_cost , vector<double> pos_vals, int time_step);
+
+	void AddDDPoseCostorConstraint(stringstream& request, string linkname,vector<double> pos_coeffs, vector<double> rot_coeffs, int start_timestep, int end_timestep, vector<double> offset);
 
 	void ClearViewer();
 

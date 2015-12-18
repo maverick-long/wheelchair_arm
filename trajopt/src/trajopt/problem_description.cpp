@@ -57,6 +57,7 @@ void RegisterMakers() {
   TermInfo::RegisterMaker("joint", &JointConstraintInfo::create);
   TermInfo::RegisterMaker("cart_vel", &CartVelCntInfo::create);
   TermInfo::RegisterMaker("joint_vel_limits", &JointVelConstraintInfo::create);
+  TermInfo::RegisterMaker("differential_pose", &CartDDCntInfo::create);
 
   gRegisteredMakers = true;
 }
@@ -463,6 +464,45 @@ void CartVelCntInfo::hatch(TrajOptProb& prob) {
        MatrixOfVectorPtr(new CartVelJacCalculator(prob.GetRAD(), link, max_displacement)), 
       concat(prob.GetVarRow(iStep), prob.GetVarRow(iStep+1)), VectorXd::Ones(0), INEQ, "CartVel")));     
   }
+}
+
+void CartDDCntInfo::fromJson(const Value& v){
+  FAIL_IF_FALSE(v.isMember("params"));
+  const Value& params = v["params"];  
+  childFromJson(params, first_step, "first_step");
+  childFromJson(params, last_step, "last_step");
+  childFromJson(params, offset,"offset",(Vector3d)Vector3d::Zero());
+  childFromJson(params, pos_coeffs,"pos_coeffs", (Vector3d)Vector3d::Ones());
+  childFromJson(params, rot_coeffs,"rot_coeffs", (Vector3d)Vector3d::Ones());
+
+  string linkstr;
+  childFromJson(params, linkstr, "link");
+  link = GetLinkMaybeAttached(gPCI->rad->GetRobot(), linkstr);
+  if (!link) {
+    PRINT_AND_THROW(boost::format("invalid link name: %s")%linkstr);
+  }
+
+  const char* all_fields[] = {"first_step", "last_step","offset", "pos_coeffs", "rot_coeffs","link"};
+  ensure_only_members(params, all_fields, sizeof(all_fields)/sizeof(char*));
+}
+
+void CartDDCntInfo::hatch(TrajOptProb& prob){
+  for(int iStep = first_step+1; iStep < last_step; ++iStep){
+    VectorOfVectorPtr f(new CartDDPoseErrCalculator(prob.GetRAD(), link, offset));
+    prob.addConstraint(ConstraintPtr(new ConstraintFromFunc(f,concat(prob.GetVarRow(iStep-1),prob.GetVarRow(iStep)),concat(rot_coeffs, pos_coeffs),EQ,name)));
+    // prob.GetPlotter()->Add(PlotterPtr(new CartPoseErrorPlotter(f, prob.GetVarRow(timestep))));
+    // prob.GetPlotter()->AddLink(link);
+  }
+  // VectorOfVectorPtr f(new CartPoseErrCalculator(toRaveTransform(wxyz, xyz), prob.GetRAD(), link, offset));
+  // if (term_type == TT_COST) {
+  //   prob.addCost(CostPtr(new CostFromErrFunc(f, prob.GetVarRow(timestep), concat(rot_coeffs, pos_coeffs), ABS, name)));
+  // }
+  // else if (term_type == TT_CNT) {
+  //   prob.addConstraint(ConstraintPtr(new ConstraintFromFunc(f, prob.GetVarRow(timestep), concat(rot_coeffs, pos_coeffs), EQ, name)));
+  // }
+
+  // prob.GetPlotter()->Add(PlotterPtr(new CartPoseErrorPlotter(f, prob.GetVarRow(timestep))));
+  // prob.GetPlotter()->AddLink(link);
 }
 
 void JointVelCostInfo::fromJson(const Value& v) {

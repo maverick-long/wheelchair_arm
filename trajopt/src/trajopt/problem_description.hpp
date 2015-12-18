@@ -206,8 +206,6 @@ struct JointPosCostInfo : public TermInfo, public MakesCost {
   DEFINE_CREATE(JointPosCostInfo)
 };
 
-
-
 /**
  \brief Motion constraint on link
 
@@ -220,6 +218,21 @@ struct CartVelCntInfo : public TermInfo, public MakesConstraint {
   void fromJson(const Value& v);
   void hatch(TrajOptProb& prob);
   DEFINE_CREATE(CartVelCntInfo)
+};
+
+/**
+ \brief Differential Driving Motion constraint on link
+
+ Constrains the change in position of the link in each timestep to following the differential driving motion law
+ */
+struct CartDDCntInfo : public TermInfo, public MakesConstraint {
+  int first_step, last_step;
+  KinBody::LinkPtr link;
+  Vector3d offset;
+  Vector3d pos_coeffs, rot_coeffs;
+  void fromJson(const Value& v);
+  void hatch(TrajOptProb& prob);
+  DEFINE_CREATE(CartDDCntInfo)
 };
 
 /**
