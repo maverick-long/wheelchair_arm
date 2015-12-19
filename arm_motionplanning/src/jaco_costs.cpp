@@ -42,7 +42,7 @@ void JACOTraj::SetVelCost(vector<double>& vel_cost,TrajoptMode mode){
 	//		jaco_joint_1   jaco_joint_2   jaco_joint_3
 	//		jaco_joint_4   jaco_joint_5   jaco_joint_6
 
-	vel_cost.assign(robot->GetActiveDOF(),100.0);
+	vel_cost.assign(robot->GetActiveDOF(),10.0);
 	vector<double> majorjoints_cost;
 
 	switch(mode){

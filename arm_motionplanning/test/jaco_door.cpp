@@ -25,19 +25,19 @@ int main(){
   door_test.SetMode(jaco_traj::TrajoptMode::WheelChairDefault);
   // door_test.SetSmoothing(true);
 
-  // std::string door = "door";
-  // affine.translation() = Eigen::Vector3d(0.0, -0.7, -0.5);
-  // affine.linear() = Eigen::Quaterniond(0.70711,0.70711,0,0).toRotationMatrix();
-  // door_test.Load(door);
-  // door_test.TransformObject(door,affine);
+  std::string door = "door";
+  affine.translation() = Eigen::Vector3d(0.0, -0.7, -0.5);
+  affine.linear() = Eigen::Quaterniond(0.70711,0.70711,0,0).toRotationMatrix();
+  door_test.Load(door);
+  door_test.TransformObject(door,affine);
 
-  // KinBodyPtr doorPtr = door_test.GetKinBody("door");
+  KinBodyPtr doorPtr = door_test.GetKinBody("door");
 
-  // doorPtr->SetJointValues({0,3.14},1);
+  doorPtr->SetJointValues({0,3.14},1);
 
   door_test.LoadGains({1,1,1},{1,1,1},{0.0,0.0,-0.15});
 
-  affine.translation() = Eigen::Vector3d(0.4, -1.6, 0.5);
+  affine.translation() = Eigen::Vector3d(0.4, -0.6, 0.5);
   affine.linear() = (Eigen::Quaterniond(0.5,-0.5,0.5,0.5)).toRotationMatrix();
   door_test.ComputeTrajectory(start_default, affine);
   

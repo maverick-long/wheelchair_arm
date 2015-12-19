@@ -546,7 +546,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddCostEnd(request);
 			AddConstraintHead(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-1,num_step-1,hand_offset);
-			// AddPoseCostorConstraint(request,"chair",root_xyz,root_quat,{0,1,1},{1,1,0},1,num_step-1,{0,0,0});
+			AddPoseCostorConstraint(request,"chair",root_xyz,root_quat,{0,0,0},{1,1,1},num_step-1,num_step-1,{0,0,0});
 			AddDDPoseCostorConstraint(request, "chair",{0,1,1},{1,1,0},1,num_step-1,{0,0,0});
 			// AddPoseCostorConstraint(request,"chair",root_xyz,root_quat,{0,0,1},{1,1,1},num_step-1,num_step-1,{0,0,0});
 			AddConstraintEnd(request,request_traj);
