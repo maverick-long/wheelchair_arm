@@ -46,11 +46,18 @@ void JACOTraj::SetVelCost(vector<double>& vel_cost,TrajoptMode mode){
 	vector<double> majorjoints_cost;
 
 	switch(mode){
-	default:
+		case TrajoptMode::PullDoorOut:
+		vel_cost.assign(robot->GetActiveDOF(),50.0);
+		majorjoints_cost = {
+			1,	1,	1,	1,	1,	1
+		};
+		break;
+
+		default:
+		vel_cost.assign(robot->GetActiveDOF(),10.0);
 		majorjoints_cost = {
 			10,	10,	10,	10,	10,	0.1
 		};
-
 	}
 	BuildJointCost(vel_cost,majorjoints_cost,mode);
 }
@@ -260,7 +267,7 @@ void JACOTraj::AddJointPrime(stringstream& request, TrajoptMode mode, int start_
 	switch(mode){
 		case TrajoptMode::ReturntoHomePose:
 			jointcoeff = {1.0,1.0,1.0,1.0,1.0,1.0};
-			jointprime = {-1.794, -2.009, 0.8117, -0.878, 1.695, 3.190};
+			jointprime = {-1.6, -2.5, 1.2, 1.57, 0, 0};
 			break;
 
 		default:

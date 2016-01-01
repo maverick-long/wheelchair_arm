@@ -51,6 +51,14 @@ std::vector<double> GetWholeJoint(RobotBasePtr robot, const std::vector<double>&
 	for(int i = 0; i<jointvalue.size();i++){
 		whole_joint[jointindex[i]] = jointvalue[i];
 	}
+
+	//add finger state
+	std::vector<int> fingerjoint = {robot->GetJoint("jaco_joint_finger_1")->GetDOFIndex(),robot->GetJoint("jaco_joint_finger_2")->GetDOFIndex(),robot->GetJoint("jaco_joint_finger_3")->GetDOFIndex()};
+	std::vector<double> finger_state;
+	robot->GetDOFValues(finger_state,fingerjoint);
+	for(int i=0;i<finger_state.size();i++){
+		whole_joint[fingerjoint[i]]=finger_state[i];
+	}
 	return whole_joint;
 }
 

@@ -13,16 +13,29 @@ using namespace jaco_traj;
 
 void JACOTraj::ShowTraj(trajopt::TrajArray traj){
 	viewer = OSGViewer::GetOrCreate(env);
+	int current_active_dof = robot->GetActiveDOF();
+	robot->SetActiveDOFs(vector_arange(current_active_dof),DOF_Transform);
 	int traj_size = traj.rows();
 	for(int i = 0;i<traj_size;i++)
 	{
 		vector<double> jointstate = getJointValuefromTraj(traj.row(i));
 		robot->SetActiveDOFValues(jointstate);
+		//show the env motion
+		if(current_mode==TrajoptMode::RotateDoorKnob){
+			double unit_degree = 1.57/traj_size;
+			KinBodyPtr doorPtr = GetKinBody("door");
+  			doorPtr->SetJointValues({0,3.14-unit_degree*i},1);
+		}else if(current_mode==TrajoptMode::PullDoorOut){
+			double unit_degree = 1.39626/traj_size;
+			KinBodyPtr doorPtr = GetKinBody("door");
+  			doorPtr->SetJointValues({0-unit_degree*i,1.57},1);
+		}
 		viewer->UpdateSceneData();
 		viewer->Draw();
 		Sleep(0.2);
 	}
 	if(see_viewer && idle_viewer)viewer->Idle();
+	robot->SetActiveDOFs(vector_arange(current_active_dof));
 }
 
 void JACOTraj::PreviewTraj(trajopt::TrajArray traj,vector<int> activejoint){

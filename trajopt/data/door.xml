@@ -52,9 +52,9 @@
     <Joint name="doorhinge" type="hinge">
       <body>frame</body>
       <body>doorbox</body>
-      <anchor>0.457 0 -0.0348</anchor>
+      <anchor>-0.457 0 -0.0348</anchor>
       <axis>0 -1 0</axis>
-      <limitsdeg>0 120</limitsdeg>
+      <limitsdeg>-120 0</limitsdeg>
     </Joint>
     <Joint name="handlehinge" type="hinge">
       <body>doorbox</body>
