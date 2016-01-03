@@ -474,7 +474,7 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
 			AddCostEnd(request);
-			AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,5,5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.3});
+			AddConstraintHead(request,hand_str,current_xyz_target,current_quat_target,pos_gains,rot_gains,5,5,{hand_offset[0],hand_offset[1],hand_offset[2]-0.1});
 			AddPoseCostorConstraint(request,"root",root_xyz,root_quat,{1,1,1},{1,1,1},1,num_step-1,{0,0,0});
 			AddJointPrime(request, mode, num_step-1, num_step-1);
 			AddConstraintEnd(request,request_traj);
@@ -598,6 +598,20 @@ void JACOTraj::ComposeRequest(stringstream& request,TrajoptMode mode, Eigen::Aff
 			current_quat_target[3] = tempquat.z();
 			AddPoseCostorConstraint(request,hand_str,xyz_target,current_quat_target	,pos_gains,{1,1,1},num_step-1,num_step-1,{0,0,-0.2});
 			AddPoseCostorConstraint(request,"chair",{0.2,0.2,root_xyz[2]},root_quat,{1,1,1},{1,1,0},num_step-1,num_step-1,{0,0,0});	
+			AddDDPoseCostorConstraint(request, "chair",{0,1,1},{1,1,0},0,num_step,{0,0,0});
+			AddConstraintEnd(request,request_traj);
+			break;
+
+		case TrajoptMode::MoveThroughDoor:
+			GetLinkPosandQuat("chair", root_xyz, root_quat);	
+			AddRequestHead(request);
+			AddCostHead(request,vel_cost);
+			AddContinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddDiscontinueCollisionCost(request,collision_cost,dist_pen,0,num_step-1);
+			AddCostEnd(request);
+			AddConstraintHead(request,hand_str,xyz_target,quat_target,{0,0,0},{0,0,0},num_step-1,num_step-1,{0,0,0});
+			// AddPoseCostorConstraint(request,hand_str,xyz_target,quat_target,pos_gains,rot_gains,num_step-8,num_step-8,{hand_offset[0],hand_offset[1],hand_offset[2]-0.1});
+			AddPoseCostorConstraint(request,"chair",{xyz_target[0],xyz_target[1],root_xyz[2]},quat_target,{1,1,1},{1,1,1},num_step-1,num_step-1,{0,0,0});	
 			AddDDPoseCostorConstraint(request, "chair",{0,1,1},{1,1,0},0,num_step,{0,0,0});
 			AddConstraintEnd(request,request_traj);
 			break;
@@ -843,10 +857,19 @@ void JACOTraj::TransformObject(std::string& object, Eigen::Affine3d trans)
 	KinBodyPtr obj = env->GetKinBody(object);
 	Eigen::Vector3d pos = obj_trans.translation();
 	Eigen::Quaterniond q = Eigen::Quaterniond(obj_trans.linear());
+	// obj_trans.linear() = q.toRotationMatrix();
+	// q = Eigen::Quaterniond(obj_trans.linear());
 	std::cout<<"Quaterniond:"<<q.w()<<","<<q.x()<<","<<q.y()<<","<<q.z()<<std::endl;
 	Transform obj_transform = Transform(Vector(q.w(),q.x(),q.y(),q.z()),Vector(pos.x(),pos.y(),pos.z()));
 
 	obj->SetTransform(obj_transform);
+}
+
+void JACOTraj::SetRobotPose(std::vector<double> jointstate){
+	int current_active_dof = robot->GetActiveDOF();
+	robot->SetActiveDOFs(vector_arange(current_active_dof),DOF_Transform);
+	robot->SetActiveDOFValues(jointstate);
+	robot->SetActiveDOFs(vector_arange(current_active_dof));
 }
 
 void JACOTraj::GetLinkPosandQuat(string linkname, vector<double>& xyz, vector<double>& quat){

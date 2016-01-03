@@ -22,7 +22,9 @@ enum class TrajoptMode : int {
 	MovetoValve = 7,
 	WheelChairDefault=8,
 	RotateDoorKnob=9,
-	PullDoorOut=10
+	PullDoorOut=10,
+	ReleaseHandle=11,
+	MoveThroughDoor=12
 };
 
 }

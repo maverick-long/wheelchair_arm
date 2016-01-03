@@ -71,9 +71,7 @@ int main(){
   it=last_state.begin();
   start_default.assign(it,it+6);
 
-  affine.translation() = Eigen::Vector3d(last_state[9],last_state[10],last_state[11]);
-  affine.linear() = Eigen::Quaterniond(last_state[12],last_state[13],last_state[14],last_state[15]).toRotationMatrix();
-  door_test.TransformObject(jaco,affine);
+  door_test.SetRobotPose(last_state);
 
   door_test.SetMode(jaco_traj::TrajoptMode::RotateDoorKnob);
   door_test.LoadGains({1,1,1},{1,1,1},{0,-0.05,-0.15});
@@ -92,9 +90,7 @@ int main(){
   it=last_state.begin();
   start_default.assign(it,it+6);
 
-  affine.translation() = Eigen::Vector3d(last_state[9],last_state[10],last_state[11]);
-  affine.linear() = Eigen::Quaterniond(last_state[12],last_state[13],last_state[14],last_state[15]).toRotationMatrix();
-  door_test.TransformObject(jaco,affine);
+  door_test.SetRobotPose(last_state);
 
   door_test.SetMode(jaco_traj::TrajoptMode::PullDoorOut);
   door_test.LoadGains({1,1,1},{1,0,1},{-0.857,-0.05+0.05,-0.25});
@@ -106,29 +102,50 @@ int main(){
   door_test.ShowTraj(traj);
 
   //release the handle
-  door_test.SetMode(jaco_traj::TrajoptMode::ReturntoHomePose);
+  door_test.SetMode(jaco_traj::TrajoptMode::ReleaseHandle);
   traj = graspcontrol(traj,0.5);
   door_test.ShowTraj(traj);
 
   last_state = getJointValuefromTraj(traj.row(traj.rows()-1));
   printcoll(last_state);
 
-  // std::vector<double> last_state={-1.60742, -1.21704, 0.505434, -0.78915, 1.10695, 6.17173, 0.5, 0.5, 0.5, -0.0348901, 0.473545, 1.4787e-09, 0.98325, -4.9542e-09, 1.62304e-09, -0.18224};
+  // std::vector<double> last_state={-1.60742, -1.21704, 0.505434, -0.78915, 1.10695, 6.17173, 0.5, 0.5, 0.5, -0.0348901, 0.473545, 1.4787e-09, 0.453545, -4.9542e-09, 1.62304e-09, -0.401529};
+  //home arm
   start_default.clear();
   it=last_state.begin();
   start_default.assign(it,it+6);
 
-  affine.translation() = Eigen::Vector3d(last_state[9],last_state[10],last_state[11]);
-  affine.linear() = Eigen::Quaterniond(last_state[12],last_state[13],last_state[14],last_state[15]).toRotationMatrix();
-  std::cout<<"akdfjladjf TransformObject"<<std::endl;
-  door_test.TransformObject(jaco,affine);
-  std::cout<<"Done"<<std::endl;
+  door_test.SetRobotPose(last_state);
+
+  door_test.SetMode(jaco_traj::TrajoptMode::ReturntoHomePose);
   door_test.LoadGains({1,1,1},{1,1,1},{0,-0.05,-0.15});
 
   affine.translation() = Eigen::Vector3d(0.4, -0.6, 0.45);
   affine.linear() = (Eigen::Quaterniond(0.5,-0.5,0.5,0.5)*Eigen::Quaterniond(0.70711,0,0,-0.70711)).toRotationMatrix();
   traj = door_test.ComputeTrajectory(start_default, affine);
   door_test.ShowTraj(traj);
+
+  last_state = getJointValuefromTraj(traj.row(traj.rows()-1));
+  printcoll(last_state);
+
+  // std::vector<double> last_state={-1.4, -2.5, 1.2, 1.57, -0, -0, 0.5, 0.5, 0.5, -0.034889, 0.473545, -0, 0.748737, -0, -0, -0.662868};
+  //move through the door
+  start_default.clear();
+  it=last_state.begin();
+  start_default.assign(it,it+6);
+
+  door_test.SetRobotPose(last_state);
+
+  door_test.SetMode(jaco_traj::TrajoptMode::MoveThroughDoor);
+  door_test.LoadGains({1,1,1},{1,1,1},{0,0,0});
+
+  affine.translation() = Eigen::Vector3d(0,-1.5,0);
+  affine.linear() = Eigen::Quaterniond(0.70711,0,0,-0.70711).toRotationMatrix();
+  traj = door_test.ComputeTrajectory(start_default,affine);
+  door_test.ShowTraj(traj);
+
+  last_state = getJointValuefromTraj(traj.row(traj.rows()-1));
+  printcoll(last_state);
 
   while(1);
 

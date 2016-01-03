@@ -267,7 +267,7 @@ void JACOTraj::AddJointPrime(stringstream& request, TrajoptMode mode, int start_
 	switch(mode){
 		case TrajoptMode::ReturntoHomePose:
 			jointcoeff = {1.0,1.0,1.0,1.0,1.0,1.0};
-			jointprime = {-1.6, -2.5, 1.2, 1.57, 0, 0};
+			jointprime = {-1.4, -2.5, 1.2, 1.57, 0, 0};
 			break;
 
 		default:

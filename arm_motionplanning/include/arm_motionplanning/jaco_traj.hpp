@@ -326,6 +326,8 @@ public:
 
 	KinBodyPtr GetKinBody(const std::string& kinbody_name);
 
+	void SetRobotPose(std::vector<double> jointstate);
+
 
 
 private:

@@ -29,6 +29,12 @@ void JACOTraj::ShowTraj(trajopt::TrajArray traj){
 			double unit_degree = 1.39626/traj_size;
 			KinBodyPtr doorPtr = GetKinBody("door");
   			doorPtr->SetJointValues({0-unit_degree*i,1.57},1);
+		}else if(current_mode==TrajoptMode::ReleaseHandle){
+			double unit_degree = 1.57*2/traj_size;
+			KinBodyPtr doorPtr = GetKinBody("door");
+			if(i<traj_size/2){
+				doorPtr->SetJointValues({-1.349718,1.57+unit_degree*i},1);
+			}
 		}
 		viewer->UpdateSceneData();
 		viewer->Draw();
